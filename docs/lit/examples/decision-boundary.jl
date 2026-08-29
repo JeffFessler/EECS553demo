@@ -109,7 +109,7 @@ end;
 RGB255(args...) = RGB((args ./ 255)...)
 color = cgrad([RGB255(255, 0, 0), :black, RGB255(0, 0, 255)]);
 x1 = range(-2, 7, 91)
-x2 = range(1, 9, 81)
+x2 = range(1, 9, 81);
 
 # Scatter plot and decision boundary
 function fplot(ff::Matrix, title::AbstractString)
@@ -134,4 +134,13 @@ p2ftil = fplot(ftil2, L"\tilde{f}(\mathbf{x})")
 p2ffun = fplot(ffun2, L"f(\mathbf{x})")
 p2 = plot(p2ftil, p2ffun, size=(950,400))
 
+#=
+Either
+``f(x)``
+or
+``\tilde{f}(x)``
+is called the
+[discriminant function](https://en.wikipedia.org/wiki/Linear_discriminant_analysis),
+depending on the literature.
+=#
 ## savefig(p2, "decision2.pdf")
