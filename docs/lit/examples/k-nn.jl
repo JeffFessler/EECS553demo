@@ -1,8 +1,9 @@
 #=
 # [k-NN (k Nearest Neighbor) classifier demo](@id knn1)
 
+Illustrate
 [K-nearest neighbors classifier](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)
-of hand-written digit images
+with MNIST hand-written digit images
 in Julia.
 =#
 
@@ -24,8 +25,7 @@ if false
         "LinearAlgebra"
         "MIRTjim"
         "MLDatasets"
-        "MLJModelInterface"
-        "NearestNeighborModels"
+        "NearestNeighbors"
         "NMF"
         "Plots"
     ])
@@ -40,11 +40,10 @@ using LaTeXStrings
 using LinearAlgebra: svd
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
-using MLJModelInterface: fit, predict
-using NearestNeighborModels: KNNClassifier
-using Plots: default, gui, savefig, plot, scatter!
+using NearestNeighbors: KDTree, knn
+using Plots: default, gui, savefig, plot, plot!, scatter!
 using Random: randperm, seed!
-default(); default(markersize=5, markerstrokecolor=:auto, label="",
+default(); default(markersize=3, markerstrokecolor=:auto, label="",
  tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)
 
 # The following line is helpful when running this file as a script;
@@ -78,13 +77,10 @@ end
 pd = jim(data[:,:,1:10,:], "Data, M=$(nx*ny), N=$(nrep*ndigit)";
     colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
 
-#
-prompt()
-
 # Partition data into train / validate / test
-ntrain = 500
-nvalid = 200
-ntest1 = 300
+ntrain = 200
+nvalid = 100
+ntest1 = 600
 seed!(0)
 tmp = randperm(nrep)
 itrain = (1:ntrain)
@@ -127,8 +123,8 @@ Xvalid = embed(dvalid, nvalid)
 Xtest1 = embed(dtest1, ntest1)
 labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
 ytrain = labeler(ntrain)
-yvalid = labeler(nvalid) 
-ytest1 = labeler(ntest1) 
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1)
 
 args = (;
  xaxis = (L"x_1", (-1,1) .* 6, -4:2:4),
@@ -140,97 +136,84 @@ args = (;
 petr = plot(; title="Train data", args...)
 pete = plot(; title="Test data", args...)
 
+colors = (:blue, :red)
 for id in 1:ndigit
-    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label="$(digitn[id])")
-    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label="$(digitn[id])")
+    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label="$(digitn[id])",
+      color = colors[id])
+    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label="$(digitn[id])",
+      color = colors[id])
 end
-plot(petr, pete; size = (950, 500))
+pp = plot(petr, pete; size = (950, 500))
+
+#
+prompt()
 
 
 #=
-# everything below here is a WIP :(
-    model_tmp = KNNClassifier(; K = 1)
-    data_tmp = permutedims(reshape(Xtrain, K, :)) # (N, K)
-    fit_tmp = fit(model_tmp, data_tmp, ytrain)
+## Construct k-NN classifier
+=#
+data_tmp = reshape(Xtrain, K, ntrain*ndigit) # (K, ntrain)
+tree = KDTree(data_tmp)
 
-gui(); throw()
+i2label = i -> getindex(ytrain, i)
+function knn_class(point::AbstractVector, k::Int)
+    idx, _ = knn(tree, point, k)
+    labels = sort(i2label.(idx))
+    return labels[k÷2+1] # majority vote
+end
+
+x1_range = range(-6, 6, 221)
+x2_range = range(-6, 6, 223)
 
 function knn_plot(k::Int)
-# knn_plot(Xtrain_data::Matrix{Float64}, train_label::Vector{Int}, test_data::Matrix{Float64}, test_label::Vector{Int}; n_neighbors = 5)
-    X_train_transposed = permutedims(train_data) # D x N
-    X_test_transposed = permutedims(test_data)   # D x N
-
-    model = KNNClassifier(; K = k)
-    fitted_model = fit(model, X_train_transposed, train_label)
-
-    x1_range = range(-3.0, stop=3.0, length=100)
-    x2_range = range(-3.0, stop=3.0, length=100)
-
-    xx = [x for x in x1_range, _ in x2_range]
-    yy = [y for _ in x1_range, y in x2_range]
-
-    grid_points = permutedims(hcat(vec(xx), vec(yy)))
-
-    Z_pred_categorical = predict(fitted_model, grid_points)
-    Z_pred_int = map(z -> parse(Int, string(z)), Z_pred_categorical)
-    Z = reshape(Z_pred_int, size(xx))
-
-    cmap_light = cgrad([colorant"#ADD8E6", colorant"#FFCCCB"])
-
-    p1 = plot(
-        framestyle=:box,
-        background_color_subplot=:white,
-        title="Decision Contours with Train Data and K value = $(n_neighbors)",
-        xlabel="\$x_1\$", ylabel="\$x_2\$",
-        xlims=(-3,3), ylims=(-3,3),
-        legend=:topright,
-        aspect_ratio=:equal
-    )
-    contourf!(p1, x1_range, x2_range, Z, levels=2, c=cmap_light, alpha=0.7, seriescolor=cmap_light, labels="")
-    scatter!(p1, train_data[train_label.==1, 1], train_data[train_label.==1, 2],
-             marker=:circle, color=:blue, label="+1", markersize=3)
-    scatter!(p1, train_data[train_label.==2, 1], train_data[train_label.==2, 2],
-             marker=:x, color=:red, label="-1", markersize=3)
-    contour!(p1, x1_range, x2_range, Z, levels=[1.5], linecolor=:black, linewidth=1, labels="")
-
-
-    p2 = plot(
-        framestyle=:box,
-        background_color_subplot=:white,
-        title="Decision Contours with Test Data and K value = $(n_neighbors)",
-        xlabel="\$x_1\$", ylabel="\$x_2\$",
-        xlims=(-3,3), ylims=(-3,3),
-        legend=:topright,
-        aspect_ratio=:equal
-    )
-    contourf!(p2, x1_range, x2_range, Z, levels=2, c=cmap_light, alpha=0.7, seriescolor=cmap_light, labels="")
-    scatter!(p2, test_data[test_label.==1, 1], test_data[test_label.==1, 2],
-             marker=:circle, color=:blue, label="+1", markersize=3)
-    scatter!(p2, test_data[test_label.==2, 1], test_data[test_label.==2, 2],
-             marker=:x, color=:red, label="-1", markersize=3)
-    contour!(p2, x1_range, x2_range, Z, levels=[1.5], linecolor=:black, linewidth=1, labels="")
-
-    combined_plot = plot(p1, p2, layout=@layout([a b]), size=(1400, 700))
-
-    ypred_test_categorical = predict(fitted_model, X_test_transposed)
-    ypred_test_int = map(z -> parse(Int, string(z)), ypred_test_categorical)
-
-    C_M_test = zeros(Int, 2, 2)
-    for i in 1:length(test_label)
-        true_idx = test_label[i]
-        pred_idx = ypred_test_int[i]
-        C_M_test[true_idx, pred_idx] += 1
+    tmp = [knn_class([x1; x2], k) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp;
+        title = "k=$k", prompt = false, alpha = 0.4, args...)
+    for id in 1:ndigit
+        scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
+            color = colors[id],
+            label = "$(digitn[id])",
+        )
     end
+    return p
+end;
 
-    false_positives = C_M_test[1, 2]
-    false_negatives = C_M_test[2, 1]
-
-    test_error_rate = ((false_positives + false_negatives) / sum(C_M_test)) * 100
-    println("Test Error Rate for k=$(n_neighbors): $(round(test_error_rate, digits=2))%")
-
-    return combined_plot
-end
+#=
+## Decision regions for various k
 =#
+
+p1 = knn_plot(1)
+
+#
+p9 = knn_plot(9)
+
+#
+p25 = knn_plot(25)
+
+#
+p99 = knn_plot(99)
+
+
+#=
+## Train / validate / test accuracy
+=#
+klist = 1:30
+data_tmp = reshape(Xtrain, K, ntrain*ndigit) # (d, n)
+train_error = [count(knn_class.(eachcol(data_tmp), k) .!= ytrain) for k in klist] / (ntrain * ndigit) * 100
+data_tmp = reshape(Xvalid, K, nvalid*ndigit) # (d, n)
+valid_error = [count(knn_class.(eachcol(data_tmp), k) .!= yvalid) for k in klist] / (nvalid * ndigit) * 100
+data_tmp = reshape(Xtest1, K, ntest1*ndigit) # (d, n)
+test1_error = [count(knn_class.(eachcol(data_tmp), k) .!= ytest1) for k in klist] / (ntest1 * ndigit) * 100
+
+pe = plot(
+ xaxis = (L"k", (0,30), [1; argmin(valid_error); argmin(test1_error); 30]),
+ yaxis = ("Error (%)", ),
+)
+plot!(klist, valid_error, marker=:x, label="Validation")
+plot!(klist, test1_error, marker=:square, label="Test")
+plot!(klist, train_error, marker=:o, label="Train")
+
+## savefig(pe, "knn-error.pdf")
 
 
 include("../../../inc/reproduce.jl")
