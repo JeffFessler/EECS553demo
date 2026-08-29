@@ -213,6 +213,7 @@ plot!(klist, valid_error, marker=:x, label="Validation")
 plot!(klist, test1_error, marker=:square, label="Test")
 plot!(klist, train_error, marker=:o, label="Train")
 
+#
 ## savefig(pe, "knn-error.pdf")
 
 
