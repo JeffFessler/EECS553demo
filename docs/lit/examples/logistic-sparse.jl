@@ -1,5 +1,5 @@
 #=
-# [Sparse logistic regression with POGM](@id logistic-sparase)
+# [Sparse logistic regression with POGM](@id logistic-sparse)
 
 Binary classification via sparse (using 1-norm)
 [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression)
