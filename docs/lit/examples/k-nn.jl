@@ -93,7 +93,7 @@ itest1 = (1:ntest1) .+ (ntrain + nvalid)
 #src @assert sort([itrain; ivalid; itest1]) == 1:nrep
 dtrain = data[:,:,tmp[itrain],:]
 dvalid = data[:,:,tmp[ivalid],:]
-dtest1 = data[:,:,tmp[itest1],:]
+dtest1 = data[:,:,tmp[itest1],:];
 
 # mean training image
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
@@ -106,11 +106,9 @@ Use two components for easy visualization
 =#
 X = reshape(dtrain .- dmean, nx*ny, :) # unfold
 K = 2
-U = svd(X).U[:,1:K]
+U = svd(X).U[:,1:K];
 
-#=
-## Basis vectors
-=#
+# Show basis vectors
 tmp = reshape(U, nx, ny, K)
 pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
 
