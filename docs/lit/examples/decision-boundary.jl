@@ -108,18 +108,17 @@ end;
 # Color map for discriminant function
 RGB255(args...) = RGB((args ./ 255)...)
 color = cgrad([RGB255(255, 0, 0), :black, RGB255(0, 0, 255)]);
+x1 = range(-2, 7, 91)
+x2 = range(1, 9, 81)
 
 # Scatter plot and decision boundary
 function fplot(ff::Matrix, title::AbstractString)
     v1p = range(-2, 7, 3)
 
-    x1 = range(-2, 7, 451)
-    x2 = range(0, 9, 451)
-
     ps = jim(x1, x2, ff; title,
      color, alpha = 0.5, yflip = false,
-     xaxis = (L"x_1", (-2, 7), 0:4:8),
-     yaxis = (L"x_2", (0, 9), 0:3:9),
+     xaxis = (L"x_1", (-2, 7), 0:3:6),
+     yaxis = (L"x_2", (1, 9), 1:3:8),
      size = (550, 500), legend = :bottomleft,
      colorbar_ticks = -1:1,
     )
@@ -133,10 +132,6 @@ ftil2 = x1 .- 0.5*x2' .- 0.75 # w'x + b
 ffun2 = sign.(ftil2)
 p2ftil = fplot(ftil2, L"\tilde{f}(\mathbf{x})")
 p2ffun = fplot(ffun2, L"f(\mathbf{x})")
-p2 = plot(p2ftil, p2ffun, size=(950,500))
+p2 = plot(p2ftil, p2ffun, size=(950,400))
 
 ## savefig(p2, "decision2.pdf")
-
-#
-prompt()
-
