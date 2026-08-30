@@ -74,8 +74,10 @@ if !@isdefined(data) || true
 end
 
 # Look at some of the image data
-pd = jim(data[:,:,1:10,:], "Data, M=$(nx*ny), N=$(nrep*ndigit)";
+pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
+
+## savefig(pd, "knn-digit-47.pdf")
 
 # Partition data into train / validate / test
 ntrain = 200
@@ -95,6 +97,7 @@ dtest1 = data[:,:,tmp[itest1],:];
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
 pm = jim(dmean; title="Mean image")
 
+## savefig(pm, "knn-mean.pdf")
 
 #=
 ## PCA-based dimensionality reduction
@@ -108,7 +111,7 @@ U = svd(X).U[:,1:K];
 tmp = reshape(U, nx, ny, K)
 pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
 
-#src savefig(pu, "knn-u.pdf")
+## savefig(pu, "knn-u.pdf")
 
 #
 prompt()
@@ -144,6 +147,8 @@ for id in 1:ndigit
       color = colors[id])
 end
 pp = plot(petr, pete; size = (950, 500))
+
+## savefig(pp, "knn-data.pdf")
 
 #
 prompt()
@@ -203,15 +208,19 @@ test1_error = errors(Xtest1, ytest1, klist);
 =#
 
 p1 = knn_plot(1, train_error[1])
+## savefig(p1, "knn-k=1.pdf")
 
 #
 p6 = knn_plot(6, train_error[6])
+## savefig(p6, "knn-k=6.pdf")
 
 #
 p16 = knn_plot(16, train_error[16])
+## savefig(p16, "knn-k=16.pdf")
 
 #
 p99 = knn_plot(99, only(errors(Xtrain, ytrain, [99])))
+## savefig(p99, "knn-k=99.pdf")
 
 
 #=
