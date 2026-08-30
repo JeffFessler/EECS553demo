@@ -41,7 +41,7 @@ using LinearAlgebra: svd
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using NearestNeighbors: KDTree, knn
-using Plots: default, gui, savefig, plot, plot!, scatter!
+using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
 using Random: randperm, seed!
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
  tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)
@@ -165,10 +165,13 @@ end
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
 
-function knn_plot(k::Int)
+color = cgrad([RGB(0, 0, 1), :black, RGB(1, 0, 0)])
+function knn_plot(k::Int, error)
     tmp = [knn_class([x1; x2], k) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp;
-        title = "k=$k", prompt = false, alpha = 0.4, args...)
+    p = jim(x1_range, x2_range, tmp; color,
+            title = "k=$k, train error=$error %",
+            prompt = false, alpha = 0.2, args...,
+        )
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
             color = colors[id],
@@ -178,33 +181,40 @@ function knn_plot(k::Int)
     return p
 end;
 
+
+#=
+## Compute train / validate / test accuracy
+=#
+klist = 1:30
+function errors(data, label, klist)
+    data = reshape(data, K, :) # (d, n)
+    return [count(knn_class.(eachcol(data), k) .!= label) for k in klist] /
+        size(data, 2) * 100
+end
+train_error = errors(Xtrain, ytrain, klist)
+valid_error = errors(Xvalid, yvalid, klist)
+test1_error = errors(Xtest1, ytest1, klist)
+
+
 #=
 ## Decision regions for various k
 =#
 
-p1 = knn_plot(1)
+p1 = knn_plot(1, train_error[1])
 
 #
-p9 = knn_plot(9)
+p6 = knn_plot(6, train_error[6])
 
 #
-p25 = knn_plot(25)
+p16 = knn_plot(16, train_error[16])
 
 #
-p99 = knn_plot(99)
+p99 = knn_plot(99, only(errors(Xtrain, ytrain, [99])))
 
 
 #=
-## Train / validate / test accuracy
+## Plot error rates
 =#
-klist = 1:30
-data_tmp = reshape(Xtrain, K, ntrain*ndigit) # (d, n)
-train_error = [count(knn_class.(eachcol(data_tmp), k) .!= ytrain) for k in klist] / (ntrain * ndigit) * 100
-data_tmp = reshape(Xvalid, K, nvalid*ndigit) # (d, n)
-valid_error = [count(knn_class.(eachcol(data_tmp), k) .!= yvalid) for k in klist] / (nvalid * ndigit) * 100
-data_tmp = reshape(Xtest1, K, ntest1*ndigit) # (d, n)
-test1_error = [count(knn_class.(eachcol(data_tmp), k) .!= ytest1) for k in klist] / (ntest1 * ndigit) * 100
-
 pe = plot(
  xaxis = (L"k", (0,30), [1; argmin(valid_error); argmin(test1_error); 30]),
  yaxis = ("Error (%)", ),
