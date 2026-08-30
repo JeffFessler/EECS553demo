@@ -165,12 +165,13 @@ end
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
 
-color = cgrad([RGB(0, 0, 1), :black, RGB(1, 0, 0)])
+α = 0.2
+color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 function knn_plot(k::Int, error)
     tmp = [knn_class([x1; x2], k) for x1 in x1_range, x2 in x2_range]
     p = jim(x1_range, x2_range, tmp; color,
             title = "k=$k, train error=$error %",
-            prompt = false, alpha = 0.2, args...,
+            prompt = false, args...,
         )
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
@@ -183,7 +184,8 @@ end;
 
 
 #=
-## Compute train / validate / test accuracy
+## Classification errors
+for train / validate / test
 =#
 klist = 1:30
 function errors(data, label, klist)
@@ -193,7 +195,7 @@ function errors(data, label, klist)
 end
 train_error = errors(Xtrain, ytrain, klist)
 valid_error = errors(Xvalid, yvalid, klist)
-test1_error = errors(Xtest1, ytest1, klist)
+test1_error = errors(Xtest1, ytest1, klist);
 
 
 #=
