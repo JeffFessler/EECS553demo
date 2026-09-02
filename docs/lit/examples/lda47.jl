@@ -36,7 +36,7 @@ end
 # Run `Pkg.add()` in the preceding code block first, if needed.
 
 using InteractiveUtils: versioninfo
-using LaTeXStrings: latexstring
+using LaTeXStrings: @L_str, latexstring
 using LinearAlgebra: svd
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
