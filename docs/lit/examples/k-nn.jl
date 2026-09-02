@@ -22,12 +22,14 @@ if false
     import Pkg
     Pkg.add([
         "InteractiveUtils"
+        "GeometryBasics"
+        "LaTeXStrings"
         "LinearAlgebra"
         "MIRTjim"
         "MLDatasets"
         "NearestNeighbors"
-        "NMF"
         "Plots"
+        "VoronoiCells"
     ])
 end
 
@@ -35,6 +37,7 @@ end
 # Tell Julia to use the following packages.
 # Run `Pkg.add()` in the preceding code block first, if needed.
 
+using GeometryBasics: Point2
 using InteractiveUtils: versioninfo
 using LaTeXStrings
 using LinearAlgebra: svd
@@ -43,6 +46,7 @@ using MLDatasets: MNIST
 using NearestNeighbors: KDTree, knn
 using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
 using Random: randperm, seed!
+using VoronoiCells: voronoicells, Rectangle
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
  tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)
 
@@ -116,6 +120,10 @@ pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
 #
 prompt()
 
+if false # use small data sample for Voronoi plots only
+    ntrain = 15
+    dtrain = dtrain[:,:,1:ntrain,:]
+end
 
 #=
 ## Visualize embedded data
@@ -173,6 +181,7 @@ x2_range = range(-6, 6, 223)
 α = 0.2
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 function knn_plot(k::Int, error)
+    error = round(error; sigdigits=2)
     tmp = [knn_class([x1; x2], k) for x1 in x1_range, x2 in x2_range]
     p = jim(x1_range, x2_range, tmp; color,
             title = "k=$k, train error=$error %",
@@ -192,7 +201,7 @@ end;
 ## Classification errors
 for train / validate / test
 =#
-klist = 1:30
+klist = 1:2:min(30, ntrain)
 function errors(data, label, klist)
     data = reshape(data, K, :) # (d, n)
     return [count(knn_class.(eachcol(data), k) .!= label) for k in klist] /
@@ -203,6 +212,30 @@ valid_error = errors(Xvalid, yvalid, klist)
 test1_error = errors(Xtest1, ytest1, klist);
 
 
+# Function to add Voronoi cells to a k-NN plot
+function add_voronoi!(pp, X; xmax = 6)
+    tmp = eachcol(reshape(Float64.(X), K, :))
+    points = Point2.(tmp)
+
+    ## Bounding box to clip the infinite outer cells
+    rect = Rectangle(Point2(-1, -1)*xmax, Point2(1, 1)*xmax)
+    tessellation = voronoicells(points, rect)
+
+    for (i, cell) in enumerate(tessellation.Cells)
+        ## Extract x and y coordinates of the cell vertices
+        x_coords = [vertex[1] for vertex in cell]
+        y_coords = [vertex[2] for vertex in cell]
+
+        ## Close the polygon by repeating the first vertex
+        push!(x_coords, x_coords[1])
+        push!(y_coords, y_coords[1])
+
+        ## Draw the cell polygon
+        plot!(pp, x_coords, y_coords, linecolor = :black, linewidth = 0.5,)
+    end
+    return pp
+end
+
 #=
 ## Decision regions for various k
 =#
@@ -210,13 +243,22 @@ test1_error = errors(Xtest1, ytest1, klist);
 p1 = knn_plot(1, train_error[1])
 ## savefig(p1, "knn-k=1.pdf")
 
-#
-p6 = knn_plot(6, train_error[6])
-## savefig(p6, "knn-k=6.pdf")
+## Voronoi plots per 553 student question
+if ntrain == 15 # only for 553 figure
+    add_voronoi!(p1, Xtrain)
+    ## savefig(p1, "voronoi-k=1.pdf")
+
+    p3 = knn_plot(3, train_error[only(findall(==(3), klist))])
+    add_voronoi!(p3, Xtrain)
+    ## savefig(p3, "voronoi-k=3.pdf")
+end
+
+p5 = knn_plot(5, train_error[only(findall(==(5), klist))])
+## savefig(p5, "knn-k=5.pdf")
 
 #
-p16 = knn_plot(16, train_error[16])
-## savefig(p16, "knn-k=16.pdf")
+p23 = knn_plot(23, train_error[only(findall(==(23), klist))])
+## savefig(p23, "knn-k=23.pdf")
 
 #
 p99 = knn_plot(99, only(errors(Xtrain, ytrain, [99])))
@@ -226,11 +268,15 @@ p99 = knn_plot(99, only(errors(Xtrain, ytrain, [99])))
 #=
 ## Plot error rates
 =#
+k_valid = klist[argmin(valid_error)] # best k for validation data
+k_test1 = klist[argmin(test1_error)] # best k for test data
+default(markersize = 5)
 pe = plot(
- xaxis = (L"k", (0,30), [1; argmin(valid_error); argmin(test1_error); 30]),
+ xaxis = (L"k", (1,klist[end]), [1, k_valid, k_test1, klist[end]]),
  yaxis = ("Error (%)", ),
+ widen = true,
 )
-plot!(klist, valid_error, marker=:x, label="Validation")
+plot!(klist, valid_error, marker=:downtri, label="Validation")
 plot!(klist, test1_error, marker=:square, label="Test")
 plot!(klist, train_error, marker=:o, label="Train")
 
