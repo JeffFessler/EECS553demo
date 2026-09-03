@@ -304,6 +304,10 @@ prompt()
 v3 = knn_plot(3, NaN;
  X = Xshow, knn_classifier, title = "k=3, n=$(nshow*ndigit)")
 add_voronoi!(v3, Xshow)
+
+#
+prompt()
+
 ## savefig(v3, "voronoi-k=3.pdf")
 
 

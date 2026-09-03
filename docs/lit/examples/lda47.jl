@@ -186,14 +186,9 @@ for id in 1:ndigit
     scatter!(pdm, Xdemean[1,:,id], Xdemean[2,:,id], color = colors[id],
         label = "$(digitn[id])",
     )
-end
-pdm
+end;
 
-#
-prompt()
-
-
-# Plot covariance ellipse:
+# Add covariance ellipse:
 tmp = reshape(Xdemean, K, ntrain*ndigit) # pool all data
 Σ = tmp * tmp' / size(tmp,2) # sample covariance
 
@@ -278,6 +273,6 @@ prompt()
 ## savefig(p0, "lda$digit_str-v1.pdf")
 
 #=
-Extension to the more efficient sign(w^⊤ x + b) approach
+Extension to the more efficient sign(⟨w,x⟩ + b) approach
 is left as an exercise.
 =#
