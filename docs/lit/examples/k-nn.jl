@@ -99,16 +99,17 @@ dtest1 = data[:,:,tmp[itest1],:];
 
 # mean training image
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
-pm = jim(dmean; title="Mean image")
+pm = jim(dmean; title="Sample mean")
 
 ## savefig(pm, "knn-mean.pdf")
+
 
 #=
 ## PCA-based dimensionality reduction
 Use two components for easy visualization
 =#
 X = reshape(dtrain .- dmean, nx*ny, :) # unfold
-K = 2
+K = 2 # reduced dimension
 U = svd(X).U[:,1:K];
 
 # Show basis vectors
@@ -117,8 +118,6 @@ pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
 
 ## savefig(pu, "knn-u.pdf")
 
-#
-prompt()
 
 if false # use small data sample for Voronoi plots only
     ntrain = 15
@@ -126,17 +125,21 @@ if false # use small data sample for Voronoi plots only
 end
 
 #=
-## Visualize embedded data
+## Embed data and label
 =#
 embed(data, n) = reshape(U' * reshape(data .- dmean, nx*ny, :), K, n, :)
 Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
 Xvalid = embed(dvalid, nvalid)
 Xtest1 = embed(dtest1, ntest1)
 labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
-ytrain = labeler(ntrain)
+ytrain = labeler(ntrain) # (ntrain*ndigit)
 yvalid = labeler(nvalid)
-ytest1 = labeler(ntest1)
+ytest1 = labeler(ntest1);
 
+
+#=
+## Visualize embedded data
+=#
 args = (;
  xaxis = (L"x_1", (-1,1) .* 6, -4:2:4),
  yaxis = (L"x_2", (-1,1) .* 6, -4:2:4),
@@ -144,16 +147,17 @@ args = (;
  size = (550, 500),
 )
 
-petr = plot(; title="Train data", args...)
-pete = plot(; title="Test data", args...)
-
 colors = (:blue, :red)
-for id in 1:ndigit
-    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label="$(digitn[id])",
-      color = colors[id])
-    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label="$(digitn[id])",
-      color = colors[id])
+function plot_data(X::Array{<:Real,3}; title::String = "")
+    p = plot(; title, args...)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id], label="$(digitn[id])",
+            color = colors[id])
+    end
+    return p
 end
+petr = plot_data(Xtrain; title = "Train data")
+pete = plot_data(Xtest1; title = "Test data")
 pp = plot(petr, pete; size = (950, 500))
 
 ## savefig(pp, "knn-data.pdf")
@@ -165,30 +169,36 @@ prompt()
 #=
 ## Construct k-NN classifier
 =#
-data_tmp = reshape(Xtrain, K, ntrain*ndigit) # (K, ntrain)
-tree = KDTree(data_tmp)
+function knn_setup(X::AbstractArray{<:Real,3}, y::Vector)
+    n = length(y)
+    data_tmp = reshape(X, size(X, 1), n) # (K, n)
+    tree = KDTree(data_tmp)
 
-i2label = i -> getindex(ytrain, i)
-function knn_class(point::AbstractVector, k::Int)
-    idx, _ = knn(tree, point, k)
-    labels = sort(i2label.(idx))
-    return labels[k÷2+1] # majority vote
+    i2label = i -> getindex(y, i)
+    function knn_class(point::AbstractVector, k::Int)
+        idx, _ = knn(tree, point, k)
+        labels = sort(i2label.(idx))
+        return labels[k÷2+1] # majority vote
+    end
+    return knn_class
 end
+knn_classifier = knn_setup(Xtrain, ytrain)
 
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
 
 α = 0.2
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
-function knn_plot(k::Int, error)
+function knn_plot(k::Int, error;
+    X = Xtrain,
+    title = "k=$k, train error=$error %",
+    knn_classifier::Function = knn_classifier,
+)
     error = round(error; sigdigits=2)
-    tmp = [knn_class([x1; x2], k) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp; color,
-            title = "k=$k, train error=$error %",
-            prompt = false, args...,
-        )
+    tmp = [knn_classifier([x1; x2], k) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false, args...)
     for id in 1:ndigit
-        scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
+        scatter!(p, X[1,:,id], X[2,:,id],
             color = colors[id],
             label = "$(digitn[id])",
         )
@@ -204,7 +214,7 @@ for train / validate / test
 klist = 1:2:min(30, ntrain)
 function errors(data, label, klist)
     data = reshape(data, K, :) # (d, n)
-    return [count(knn_class.(eachcol(data), k) .!= label) for k in klist] /
+    return [count(knn_classifier.(eachcol(data), k) .!= label) for k in klist] /
         size(data, 2) * 100
 end
 train_error = errors(Xtrain, ytrain, klist)
@@ -212,46 +222,12 @@ valid_error = errors(Xvalid, yvalid, klist)
 test1_error = errors(Xtest1, ytest1, klist);
 
 
-# Function to add Voronoi cells to a k-NN plot
-function add_voronoi!(pp, X; xmax = 6)
-    tmp = eachcol(reshape(Float64.(X), K, :))
-    points = Point2.(tmp)
-
-    ## Bounding box to clip the infinite outer cells
-    rect = Rectangle(Point2(-1, -1)*xmax, Point2(1, 1)*xmax)
-    tessellation = voronoicells(points, rect)
-
-    for (i, cell) in enumerate(tessellation.Cells)
-        ## Extract x and y coordinates of the cell vertices
-        x_coords = [vertex[1] for vertex in cell]
-        y_coords = [vertex[2] for vertex in cell]
-
-        ## Close the polygon by repeating the first vertex
-        push!(x_coords, x_coords[1])
-        push!(y_coords, y_coords[1])
-
-        ## Draw the cell polygon
-        plot!(pp, x_coords, y_coords, linecolor = :black, linewidth = 0.5,)
-    end
-    return pp
-end
-
 #=
 ## Decision regions for various k
 =#
 
 p1 = knn_plot(1, train_error[1])
 ## savefig(p1, "knn-k=1.pdf")
-
-## Voronoi plots per 553 student question
-if ntrain == 15 # only for 553 figure
-    add_voronoi!(p1, Xtrain)
-    ## savefig(p1, "voronoi-k=1.pdf")
-
-    p3 = knn_plot(3, train_error[only(findall(==(3), klist))])
-    add_voronoi!(p3, Xtrain)
-    ## savefig(p3, "voronoi-k=3.pdf")
-end
 
 p5 = knn_plot(5, train_error[only(findall(==(5), klist))])
 ## savefig(p5, "knn-k=5.pdf")
@@ -282,6 +258,57 @@ plot!(klist, train_error, marker=:o, label="Train")
 
 #
 ## savefig(pe, "knn-error.pdf")
+
+
+# Function to add Voronoi cells to a k-NN plot
+function add_voronoi!(pp, X; xmax = 6)
+    tmp = eachcol(reshape(Float64.(X), K, :))
+    points = Point2.(tmp)
+
+    ## Bounding box to clip the infinite outer cells
+    rect = Rectangle(Point2(-1, -1)*xmax, Point2(1, 1)*xmax)
+    tessellation = voronoicells(points, rect)
+
+    for (i, cell) in enumerate(tessellation.Cells)
+        ## Extract x and y coordinates of the cell vertices
+        x_coords = [vertex[1] for vertex in cell]
+        y_coords = [vertex[2] for vertex in cell]
+
+        ## Close the polygon by repeating the first vertex
+        push!(x_coords, x_coords[1])
+        push!(y_coords, y_coords[1])
+
+        ## Draw the cell polygon
+        plot!(pp, x_coords, y_coords, linecolor = :black, linewidth = 0.5,)
+    end
+    return pp
+end
+
+
+#=
+## Voronoi plots
+Per 553 student question, for small n
+=#
+nshow = 15
+Xshow = Xtrain[:,1:nshow,:]
+yshow = vec(reshape(ytrain, ntrain, ndigit)[1:nshow,:])
+knn_classifier = knn_setup(Xshow, yshow)
+v1 = knn_plot(1, NaN;
+ X = Xshow, knn_classifier, title = "k=1, n=$(nshow*ndigit)")
+add_voronoi!(v1, Xshow)
+## savefig(v1, "voronoi-k=1.pdf")
+
+#
+prompt()
+
+v3 = knn_plot(3, NaN;
+ X = Xshow, knn_classifier, title = "k=3, n=$(nshow*ndigit)")
+add_voronoi!(v3, Xshow)
+
+#
+prompt()
+
+## savefig(v3, "voronoi-k=3.pdf")
 
 
 include("../../../inc/reproduce.jl")
