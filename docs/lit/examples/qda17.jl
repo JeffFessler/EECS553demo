@@ -1,8 +1,8 @@
 #=
-# [LDA demo](@id lda47)
+# [QDA demo](@id lda17)
 
 Illustrate
-[Linear discriminant analysis (LDA)](https://en.wikipedia.org/wiki/Linear_discriminant_analysis)
+[Quadratic discriminant analysis (QDA)](https://en.wikipedia.org/wiki/Quadratic_classifier#Quadratic_discriminant_analysis)
 with MNIST hand-written digit images
 in Julia.
 =#
@@ -37,7 +37,7 @@ end
 
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str, latexstring
-using LinearAlgebra: svd
+using LinearAlgebra: svd, det
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
@@ -59,8 +59,7 @@ This code will automatically download the data from web if needed
 and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
 if !@isdefined(data) || true
-    digitn = [4,7] # which digits to use
-    ## digitn = [1,7] # uncomment this for another case
+    digitn = [1,7]
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
@@ -175,71 +174,71 @@ petr
 #
 prompt()
 
+function add_ellipse!(p, mean, Σ)
+    z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
+    xc = sqrt(2Σ) * z
+    return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:], color=:black)
+end
+
 ## savefig(petr, "lda$digit_str-means.pdf")
 
 
 # Plot de-meaned data:
 Xdemean = cat([Xtrain[:,:,id] .- means[id] for id in 1:ndigit]..., dims=3)
 
-pdm = plot(; title="Train data de-meaned", args...)
+pdm = Vector{Any}(undef, ndigit)
+Σ = Vector{Matrix{<:Number}}(undef, ndigit)
 for id in 1:ndigit
-    scatter!(pdm, Xdemean[1,:,id], Xdemean[2,:,id], color = colors[id],
-        label = "$(digitn[id])",
+    p = plot(; title="Train data de-meaned, k=$id", args...)
+    scatter!(p, Xdemean[1,:,id], Xdemean[2,:,id],
+        color = colors[id], label = "$(digitn[id])",
     )
+
+    local tmp = Xdemean[:,:,id]
+    Σ[id] = tmp * tmp' / size(tmp,2) # sample covariance
+
+    add_ellipse!(p, zeros(2), Σ[id])
+    pdm[id] = p
 end
-pdm
+pc = plot(pdm..., size = (950, 500))
 
 #
 prompt()
 
-
-# Plot covariance ellipse:
-tmp = reshape(Xdemean, K, ntrain*ndigit) # pool all data
-Σ = tmp * tmp' / size(tmp,2) # sample covariance
-
-z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
-xc = sqrt(2Σ) * z
-pc = deepcopy(pdm)
-plot!(pc, xc[1,:], xc[2,:], color=:black, label="½ x'Σ⁻¹x = 1")
-plot!(pc, legend = :topleft, legendfontsize = 12)
-
-#
-prompt()
-
-## savefig(pc, "lda$digit_str-cov.pdf")
+## savefig(pc, "qda$digit_str-cov.pdf")
 
 
 #=
-## LDA classifier
+## QDA classifier
+brute force with argmax
 =#
 
-# LDA classifier v1; brute-force way:
-sqrtΣinv = inv(sqrt(Σ))
-function lda_classify1(
+sqrtΣinv = @. inv(sqrt(Σ))
+function qda_classify1(
     x::AbstractVector;
     means::Vector{<:Vector} = means,
-    sqrtΣinv::AbstractMatrix = sqrtΣinv,
+    sqrtΣinv::Vector{<:Matrix} = sqrtΣinv,
     prob::AbstractVector = fill(0.5, length(means)),
 )
-    score = copy(prob)
+    score = copy(prob) # πₖ
     for id in 1:length(means)
-        r = sqrtΣinv * (x - means[id]) # whitened residual
-        score[id] *= exp.(-(1/2) * sum(abs2, r))
+        r = sqrtΣinv[id] * (x - means[id]) # whitened residual
+        score[id] *= det(sqrtΣinv[id]) * exp.(-(1/2) * sum(abs2, r))
     end
     return digitn[argmax(score)]
 end
-#src lda_classify1([0,0]) # test
+#src qda_classify1([0,0]) # test
 
 
 α = 0.2
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
-function lda_plot(error::Real)
+function qda_plot(error::Real)
     error = round(error; sigdigits=2)
-    tmp = [lda_classify1([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    tmp = [qda_classify1([x1; x2]) for x1 in x1_range, x2 in x2_range]
     p = jim(x1_range, x2_range, tmp; color,
-            title = "LDA train error=$error %",
+            title = "QDA train error=$error %",
             prompt = false, args...,
         )
     for id in 1:ndigit
@@ -247,8 +246,7 @@ function lda_plot(error::Real)
             color = colors[id],
             label = "$(digitn[id])",
         )
-        plot!(p, means[id][1] .+ xc[1,:], means[id][2] .+ xc[2,:],
-            color = :black,)
+        add_ellipse!(p, means[id], Σ[id])
     end
     plot_means!(p, dolabel = false)
     return p
@@ -261,23 +259,18 @@ for train / validate / test
 =#
 function errors(data, label)
     data = reshape(data, K, :) # (d, n)
-    return 100 * count(lda_classify1.(eachcol(data)) .!= label) / size(data, 2)
+    return 100 * count(qda_classify1.(eachcol(data)) .!= label) / size(data, 2)
 end
 train_error = errors(Xtrain, ytrain)
 valid_error = errors(Xvalid, yvalid)
 test1_error = errors(Xtest1, ytest1)
-[ train_error valid_error test1_error ]
+err = [ train_error valid_error test1_error ]
 
 
 # Plot data and decision regions:
-p0 = lda_plot(train_error)
+p0 = qda_plot(train_error)
 
 #
 prompt()
 
-## savefig(p0, "lda$digit_str-v1.pdf")
-
-#=
-Extension to the more efficient sign(w^⊤ x + b) approach
-is left as an exercise.
-=#
+## savefig(p0, "qda$digit_str-v1.pdf")
