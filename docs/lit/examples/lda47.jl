@@ -60,7 +60,7 @@ and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
 if !@isdefined(data) || true
     digitn = [4,7] # which digits to use
-    digitn = [1,7] # which digits to use
+    ## digitn = [1,7] # uncomment this for another case
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
@@ -95,7 +95,7 @@ dtrain = data[:,:,tmp[itrain],:]
 dvalid = data[:,:,tmp[ivalid],:]
 dtest1 = data[:,:,tmp[itest1],:];
 
-# mean training image
+# Sample mean training image:
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
 pm = jim(dmean; title="Mean image")
 
@@ -178,7 +178,7 @@ prompt()
 ## savefig(petr, "lda$digit_str-means.pdf")
 
 
-## Plot de-meaned data
+# Plot de-meaned data:
 Xdemean = cat([Xtrain[:,:,id] .- means[id] for id in 1:ndigit]..., dims=3)
 
 pdm = plot(; title="Train data de-meaned", args...)
@@ -189,9 +189,11 @@ for id in 1:ndigit
 end
 pdm
 
+#
+prompt()
 
-## Plot covariance ellipsoid
 
+# Plot covariance ellipsoid:
 tmp = reshape(Xdemean, K, ntrain*ndigit) # pool all data
 Σ = tmp * tmp' / size(tmp,2) # sample covariance
 
@@ -201,16 +203,17 @@ pc = deepcopy(pdm)
 plot!(pc, xc[1,:], xc[2,:], color=:black, label="½ x'Σ⁻¹x = 1")
 plot!(pc, legend = :topleft, legendfontsize = 12)
 
-## savefig(pc, "lda$digit_str-cov.pdf")
-
+#
 prompt()
+
+## savefig(pc, "lda$digit_str-cov.pdf")
 
 
 #=
 ## LDA classifier
 =#
 
-# LDA classifier v1: brute-force way
+# LDA classifier v1; brute-force way:
 sqrtΣinv = inv(sqrt(Σ))
 function lda_classify1(
     x::AbstractVector;
@@ -265,7 +268,16 @@ valid_error = errors(Xvalid, yvalid)
 test1_error = errors(Xtest1, ytest1)
 [ train_error valid_error test1_error ]
 
+
+# Plot data and decision regions:
 p0 = lda_plot(train_error)
+
+#
+prompt()
+
 ## savefig(p0, "lda$digit_str-v1.pdf")
 
-#src gui(); throw()
+#=
+Extension to the more efficient sign(w^⊤ x + b) approach
+is left as an exercise.
+=#
