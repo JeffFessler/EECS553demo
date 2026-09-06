@@ -174,10 +174,10 @@ petr
 #
 prompt()
 
-function add_ellipse!(p, mean, Σ)
+function add_ellipse!(p, mean, Σ; kwargs...)
     z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
     xc = sqrt(2Σ) * z
-    return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:], color=:black)
+    return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:]; color=:black, kwargs...)
 end
 
 ## savefig(petr, "lda$digit_str-means.pdf")
@@ -234,13 +234,13 @@ end
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
-function qda_plot(error::Real)
+function qda_plot(error::Real;
+    classifier::Function = qda_classify1,
+    title::AbstractString = "QDA train error=$error %",
+)
     error = round(error; sigdigits=2)
-    tmp = [qda_classify1([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp; color,
-            title = "QDA train error=$error %",
-            prompt = false, args...,
-        )
+    tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false, args...)
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
             color = colors[id],
@@ -257,14 +257,14 @@ end;
 ## Classification errors
 for train / validate / test
 =#
-function errors(data, label)
+function errors(data, label; classifier::Function = qda_classify1)
     data = reshape(data, K, :) # (d, n)
-    return 100 * count(qda_classify1.(eachcol(data)) .!= label) / size(data, 2)
+    return 100 * count(classifier.(eachcol(data)) .!= label) / size(data, 2)
 end
 train_error = errors(Xtrain, ytrain)
 valid_error = errors(Xvalid, yvalid)
 test1_error = errors(Xtest1, ytest1)
-err = [ train_error valid_error test1_error ]
+err1 = [ train_error valid_error test1_error ]
 
 
 # Plot data and decision regions:
