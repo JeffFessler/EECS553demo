@@ -175,6 +175,12 @@ petr
 #
 prompt()
 
+function add_ellipse!(p, mean, Σ; kwargs...)
+    z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
+    xc = sqrt(2Σ) * z
+    return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:]; color=:black, kwargs...)
+end
+
 ## savefig(petr, "lda$digit_str-means.pdf")
 
 
@@ -183,8 +189,8 @@ Xdemean = cat([Xtrain[:,:,id] .- means[id] for id in 1:ndigit]..., dims=3)
 
 pdm = plot(; title="Train data de-meaned", args...)
 for id in 1:ndigit
-    scatter!(pdm, Xdemean[1,:,id], Xdemean[2,:,id], color = colors[id],
-        label = "$(digitn[id])",
+    scatter!(pdm, Xdemean[1,:,id], Xdemean[2,:,id],
+        color = colors[id], label = "$(digitn[id])",
     )
 end;
 
@@ -192,11 +198,8 @@ end;
 tmp = reshape(Xdemean, K, ntrain*ndigit) # pool all data
 Σ = tmp * tmp' / size(tmp,2) # sample covariance
 
-z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
-xc = sqrt(2Σ) * z
 pc = deepcopy(pdm)
-plot!(pc, xc[1,:], xc[2,:], color=:black, label="½ x'Σ⁻¹x = 1")
-plot!(pc, legend = :topleft, legendfontsize = 12)
+add_ellipse!(pc, zeros(2), Σ; label="½ x'Σ⁻¹x = 1", legend = :topleft, legendfontsize = 12)
 
 #
 prompt()
@@ -206,6 +209,7 @@ prompt()
 
 #=
 ## LDA classifier
+brute force with argmax
 =#
 
 # LDA classifier v1; brute-force way:
@@ -216,7 +220,7 @@ function lda_classify1(
     sqrtΣinv::AbstractMatrix = sqrtΣinv,
     prob::AbstractVector = fill(0.5, length(means)),
 )
-    score = copy(prob)
+    score = copy(prob) # πₖ
     for id in 1:length(means)
         r = sqrtΣinv * (x - means[id]) # whitened residual
         score[id] *= exp.(-(1/2) * sum(abs2, r))
@@ -230,20 +234,19 @@ end
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
-function lda_plot(error::Real)
+function lda_plot(error::Real;
+    classifier::Function = lda_classify1,
+    title::AbstractString = "LDA train error=$error %",
+)
     error = round(error; sigdigits=2)
-    tmp = [lda_classify1([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp; color,
-            title = "LDA train error=$error %",
-            prompt = false, args...,
-        )
+    tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false, args...)
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
             color = colors[id],
             label = "$(digitn[id])",
         )
-        plot!(p, means[id][1] .+ xc[1,:], means[id][2] .+ xc[2,:],
-            color = :black,)
+        add_ellipse!(p, means[id], Σ)
     end
     plot_means!(p, dolabel = false)
     return p
@@ -254,17 +257,19 @@ end;
 ## Classification errors
 for train / validate / test
 =#
-function errors(data, label)
+function errors(data, label; classifier::Function = lda_classify1)
     data = reshape(data, K, :) # (d, n)
-    return 100 * count(lda_classify1.(eachcol(data)) .!= label) / size(data, 2)
+    return 100 * count(classifier.(eachcol(data)) .!= label) / size(data, 2)
 end
 train_error = errors(Xtrain, ytrain)
 valid_error = errors(Xvalid, yvalid)
 test1_error = errors(Xtest1, ytest1)
-[ train_error valid_error test1_error ]
+err1 = [ train_error valid_error test1_error ]
 
 
-# Plot data and decision regions:
+#=
+## Plot data and decision regions:
+=#
 p0 = lda_plot(train_error)
 
 #
