@@ -238,6 +238,7 @@ x2_range = range(-6, 6, 223)
 function qda_plot(error::Real;
     classifier::Function = qda_classify1,
     title::AbstractString = "QDA train error=$error %",
+    Σs::Vector{<:Any} = Σ,
 )
     error = round(error; sigdigits=2)
     tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
@@ -247,7 +248,7 @@ function qda_plot(error::Real;
             color = colors[id],
             label = "$(digitn[id])",
         )
-        add_ellipse!(p, means[id], Σ[id])
+        add_ellipse!(p, means[id], Σs[id])
     end
     plot_means!(p, dolabel = false)
     return p
