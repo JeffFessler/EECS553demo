@@ -78,7 +78,7 @@ end
 pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
 
-digit_str = prod("$d" for d in digitn); # string for file names
+digit_str = join(digitn); # string for file names
 ## savefig(pd, "lda$digit_str-digit.pdf")
 
 # Partition data into train / validate / test
@@ -175,13 +175,14 @@ petr
 #
 prompt()
 
+## savefig(petr, "lda$digit_str-means.pdf")
+
+
 function add_ellipse!(p, mean, Σ; kwargs...)
     z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
     xc = sqrt(2Σ) * z
     return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:]; color=:black, kwargs...)
-end
-
-## savefig(petr, "lda$digit_str-means.pdf")
+end;
 
 
 # Plot de-meaned data:
