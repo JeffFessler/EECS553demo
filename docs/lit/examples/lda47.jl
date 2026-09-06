@@ -269,7 +269,7 @@ err1 = [ train_error valid_error test1_error ]
 
 
 #=
-## Plot data and decision regions:
+## Plot data and decision regions
 =#
 p0 = lda_plot(train_error)
 
