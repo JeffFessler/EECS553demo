@@ -212,9 +212,12 @@ end;
 for train / validate / test
 =#
 klist = 1:2:min(30, ntrain)
-function errors(data, label, klist)
-    data = reshape(data, K, :) # (d, n)
-    return [count(knn_classifier.(eachcol(data), k) .!= label) for k in klist] /
+function errors(data, label, klist;
+    classifier::Function = knn_classifier,
+)
+    d = only(size(first(classifier.tree.data)))
+    data = reshape(data, d, :) # (d, n)
+    return [count(classifier.(eachcol(data), k) .!= label) for k in klist] /
         size(data, 2) * 100
 end
 train_error = errors(Xtrain, ytrain, klist)
@@ -252,11 +255,10 @@ pe = plot(
  yaxis = ("Error (%)", ),
  widen = true,
 )
-plot!(klist, valid_error, marker=:downtri, label="Validation")
-plot!(klist, test1_error, marker=:square, label="Test")
-plot!(klist, train_error, marker=:o, label="Train")
+plot!(klist, valid_error, marker = :downtri, label="Validation")
+plot!(klist, test1_error, marker = :square, label="Test")
+plot!(klist, train_error, marker = :o, label="Train")
 
-#
 ## savefig(pe, "knn-error.pdf")
 
 
@@ -311,4 +313,4 @@ prompt()
 ## savefig(v3, "voronoi-k=3.pdf")
 
 
-include("../../../inc/reproduce.jl")
+## include("../../../inc/reproduce.jl")
