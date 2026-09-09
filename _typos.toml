@@ -3,4 +3,5 @@ extend-ignore-identifiers-re = [
  "ivalid",
  "pn",
  "meaned",
+ "yhat",
 ]
