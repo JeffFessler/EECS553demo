@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>k-NN (k Nearest Neighbor) classifier demo · EECS553demo</title><meta name="title" content="k-NN (k Nearest Neighbor) classifier demo · EECS553demo"/><meta property="og:title" content="k-NN (k Nearest Neighbor) classifier demo · EECS553demo"/><meta property="twitter:title" content="k-NN (k Nearest Neighbor) classifier demo · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/k-nn/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/k-nn/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/k-nn/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li class="is-active"><a class="tocitem" href>k-NN (k Nearest Neighbor) classifier demo</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Embed-data-and-label"><span>Embed data and label</span></a></li><li><a class="tocitem" href="#Visualize-embedded-data"><span>Visualize embedded data</span></a></li><li><a class="tocitem" href="#Construct-k-NN-classifier"><span>Construct k-NN classifier</span></a></li><li><a class="tocitem" href="#Classification-errors"><span>Classification errors</span></a></li><li><a class="tocitem" href="#Decision-regions-for-various-k"><span>Decision regions for various k</span></a></li><li><a class="tocitem" href="#Plot-error-rates"><span>Plot error rates</span></a></li><li><a class="tocitem" href="#Voronoi-plots"><span>Voronoi plots</span></a></li></ul></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>k-NN (k Nearest Neighbor) classifier demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>k-NN (k Nearest Neighbor) classifier demo</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/k-nn.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="knn1"><a class="docs-heading-anchor" href="#knn1">k-NN (k Nearest Neighbor) classifier demo</a><a id="knn1-1"></a><a class="docs-heading-anchor-permalink" href="#knn1" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm">K-nearest neighbors classifier</a> with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/k-nn.jl"><code>k-nn.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/k-nn.ipynb"><code>k-nn.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/k-nn.ipynb"><code>k-nn.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;InteractiveUtils&quot;
+        &quot;GeometryBasics&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;NearestNeighbors&quot;
+        &quot;Plots&quot;
+        &quot;VoronoiCells&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using GeometryBasics: Point2
+using InteractiveUtils: versioninfo
+using LaTeXStrings
+using LinearAlgebra: svd
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using NearestNeighbors: KDTree, knn
+using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
+using Random: randperm, seed!
+using VoronoiCells: voronoicells, Rectangle
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data) || true
+    digitn = [4,7] # which digits to use
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # function to extract the 1st `nrep` examples of digit n:
+    data = n -&gt; dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
+    data = cat(dims=4, data.(digitn)...)
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data)
+    data = data[:,2:ny,:,:] # make images non-square to force debug
+    ny = size(data,2)
+    size(data) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 2)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
+
+# savefig(pd, &quot;knn-digit-47.pdf&quot;)</code></pre><img src="c21f5064.svg" alt="Example block output"/><p>Partition data into train / validate / test</p><pre><code class="language-julia hljs">ntrain = 200
+nvalid = 100
+ntest1 = 600
+seed!(0)
+tmp = randperm(nrep)
+itrain = (1:ntrain)
+ivalid = (1:nvalid) .+ ntrain
+itest1 = (1:ntest1) .+ (ntrain + nvalid)
+dtrain = data[:,:,tmp[itrain],:]
+dvalid = data[:,:,tmp[ivalid],:]
+dtest1 = data[:,:,tmp[itest1],:];</code></pre><p>mean training image</p><pre><code class="language-julia hljs">dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
+pm = jim(dmean; title=&quot;Sample mean&quot;)
+
+# savefig(pm, &quot;knn-mean.pdf&quot;)</code></pre><img src="fbeaea86.svg" alt="Example block output"/><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><p>Use two components for easy visualization</p><pre><code class="language-julia hljs">X = reshape(dtrain .- dmean, nx*ny, :) # unfold
+K = 2 # reduced dimension
+U = svd(X).U[:,1:K];</code></pre><p>Show basis vectors</p><pre><code class="language-julia hljs">tmp = reshape(U, nx, ny, K)
+pu = jim(tmp; title=&quot;Basis functions, K=$K&quot;, color=:cividis, size=(700,400))
+
+# savefig(pu, &quot;knn-u.pdf&quot;)
+
+
+if false # use small data sample for Voronoi plots only
+    ntrain = 15
+    dtrain = dtrain[:,:,1:ntrain,:]
+end</code></pre><h2 id="Embed-data-and-label"><a class="docs-heading-anchor" href="#Embed-data-and-label">Embed data and label</a><a id="Embed-data-and-label-1"></a><a class="docs-heading-anchor-permalink" href="#Embed-data-and-label" title="Permalink"></a></h2><pre><code class="language-julia hljs">embed(data, n) = reshape(U&#39; * reshape(data .- dmean, nx*ny, :), K, n, :)
+Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
+Xvalid = embed(dvalid, nvalid)
+Xtest1 = embed(dtest1, ntest1)
+labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
+ytrain = labeler(ntrain) # (ntrain*ndigit)
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1);</code></pre><h2 id="Visualize-embedded-data"><a class="docs-heading-anchor" href="#Visualize-embedded-data">Visualize embedded data</a><a id="Visualize-embedded-data-1"></a><a class="docs-heading-anchor-permalink" href="#Visualize-embedded-data" title="Permalink"></a></h2><pre><code class="language-julia hljs">args = (;
+ xaxis = (L&quot;x_1&quot;, (-1,1) .* 6, -4:2:4),
+ yaxis = (L&quot;x_2&quot;, (-1,1) .* 6, -4:2:4),
+ aspect_ratio = 1,
+ size = (550, 500),
+)
+
+colors = (:blue, :red)
+function plot_data(X::Array{&lt;:Real,3}; title::String = &quot;&quot;)
+    p = plot(; title, args...)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id], label=&quot;$(digitn[id])&quot;,
+            color = colors[id])
+    end
+    return p
+end
+petr = plot_data(Xtrain; title = &quot;Train data&quot;)
+pete = plot_data(Xtest1; title = &quot;Test data&quot;)
+pp = plot(petr, pete; size = (950, 500))
+
+# savefig(pp, &quot;knn-data.pdf&quot;)</code></pre><img src="d372d60f.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><h2 id="Construct-k-NN-classifier"><a class="docs-heading-anchor" href="#Construct-k-NN-classifier">Construct k-NN classifier</a><a id="Construct-k-NN-classifier-1"></a><a class="docs-heading-anchor-permalink" href="#Construct-k-NN-classifier" title="Permalink"></a></h2><pre><code class="language-julia hljs">function knn_setup(X::AbstractArray{&lt;:Real,3}, y::Vector)
+    n = length(y)
+    data_tmp = reshape(X, size(X, 1), n) # (K, n)
+    tree = KDTree(data_tmp)
+
+    i2label = i -&gt; getindex(y, i)
+    function knn_class(point::AbstractVector, k::Int)
+        idx, _ = knn(tree, point, k)
+        labels = sort(i2label.(idx))
+        return labels[k÷2+1] # majority vote
+    end
+    return knn_class
+end
+knn_classifier = knn_setup(Xtrain, ytrain)
+
+x1_range = range(-6, 6, 221)
+x2_range = range(-6, 6, 223)
+
+α = 0.2
+color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
+function knn_plot(k::Int, error;
+    X = Xtrain,
+    title = &quot;k=$k, train error=$error %&quot;,
+    knn_classifier::Function = knn_classifier,
+)
+    error = round(error; sigdigits=2)
+    tmp = [knn_classifier([x1; x2], k) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false, args...)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id],
+            color = colors[id],
+            label = &quot;$(digitn[id])&quot;,
+        )
+    end
+    return p
+end;</code></pre><h2 id="Classification-errors"><a class="docs-heading-anchor" href="#Classification-errors">Classification errors</a><a id="Classification-errors-1"></a><a class="docs-heading-anchor-permalink" href="#Classification-errors" title="Permalink"></a></h2><p>for train / validate / test</p><pre><code class="language-julia hljs">klist = 1:2:min(30, ntrain)
+function errors(data, label, klist)
+    data = reshape(data, K, :) # (d, n)
+    return [count(knn_classifier.(eachcol(data), k) .!= label) for k in klist] /
+        size(data, 2) * 100
+end
+train_error = errors(Xtrain, ytrain, klist)
+valid_error = errors(Xvalid, yvalid, klist)
+test1_error = errors(Xtest1, ytest1, klist);</code></pre><h2 id="Decision-regions-for-various-k"><a class="docs-heading-anchor" href="#Decision-regions-for-various-k">Decision regions for various k</a><a id="Decision-regions-for-various-k-1"></a><a class="docs-heading-anchor-permalink" href="#Decision-regions-for-various-k" title="Permalink"></a></h2><pre><code class="language-julia hljs">p1 = knn_plot(1, train_error[1])
+# savefig(p1, &quot;knn-k=1.pdf&quot;)
+
+p5 = knn_plot(5, train_error[only(findall(==(5), klist))])
+# savefig(p5, &quot;knn-k=5.pdf&quot;)</code></pre><img src="2bee4030.svg" alt="Example block output"/><pre><code class="language-julia hljs">p23 = knn_plot(23, train_error[only(findall(==(23), klist))])
+# savefig(p23, &quot;knn-k=23.pdf&quot;)</code></pre><img src="67dcf7c3.svg" alt="Example block output"/><pre><code class="language-julia hljs">p99 = knn_plot(99, only(errors(Xtrain, ytrain, [99])))
+# savefig(p99, &quot;knn-k=99.pdf&quot;)</code></pre><img src="e5577937.svg" alt="Example block output"/><h2 id="Plot-error-rates"><a class="docs-heading-anchor" href="#Plot-error-rates">Plot error rates</a><a id="Plot-error-rates-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-error-rates" title="Permalink"></a></h2><pre><code class="language-julia hljs">k_valid = klist[argmin(valid_error)] # best k for validation data
+k_test1 = klist[argmin(test1_error)] # best k for test data
+default(markersize = 5)
+pe = plot(
+ xaxis = (L&quot;k&quot;, (1,klist[end]), [1, k_valid, k_test1, klist[end]]),
+ yaxis = (&quot;Error (%)&quot;, ),
+ widen = true,
+)
+plot!(klist, valid_error, marker=:downtri, label=&quot;Validation&quot;)
+plot!(klist, test1_error, marker=:square, label=&quot;Test&quot;)
+plot!(klist, train_error, marker=:o, label=&quot;Train&quot;)</code></pre><img src="17337c33.svg" alt="Example block output"/><pre><code class="language-julia hljs"># savefig(pe, &quot;knn-error.pdf&quot;)</code></pre><p>Function to add Voronoi cells to a k-NN plot</p><pre><code class="language-julia hljs">function add_voronoi!(pp, X; xmax = 6)
+    tmp = eachcol(reshape(Float64.(X), K, :))
+    points = Point2.(tmp)
+
+    # Bounding box to clip the infinite outer cells
+    rect = Rectangle(Point2(-1, -1)*xmax, Point2(1, 1)*xmax)
+    tessellation = voronoicells(points, rect)
+
+    for (i, cell) in enumerate(tessellation.Cells)
+        # Extract x and y coordinates of the cell vertices
+        x_coords = [vertex[1] for vertex in cell]
+        y_coords = [vertex[2] for vertex in cell]
+
+        # Close the polygon by repeating the first vertex
+        push!(x_coords, x_coords[1])
+        push!(y_coords, y_coords[1])
+
+        # Draw the cell polygon
+        plot!(pp, x_coords, y_coords, linecolor = :black, linewidth = 0.5,)
+    end
+    return pp
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">add_voronoi! (generic function with 1 method)</code></pre><h2 id="Voronoi-plots"><a class="docs-heading-anchor" href="#Voronoi-plots">Voronoi plots</a><a id="Voronoi-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Voronoi-plots" title="Permalink"></a></h2><p>Per 553 student question, for small n</p><pre><code class="language-julia hljs">nshow = 15
+Xshow = Xtrain[:,1:nshow,:]
+yshow = vec(reshape(ytrain, ntrain, ndigit)[1:nshow,:])
+knn_classifier = knn_setup(Xshow, yshow)
+v1 = knn_plot(1, NaN;
+ X = Xshow, knn_classifier, title = &quot;k=1, n=$(nshow*ndigit)&quot;)
+add_voronoi!(v1, Xshow)
+# savefig(v1, &quot;voronoi-k=1.pdf&quot;)</code></pre><img src="e95b6417.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+v3 = knn_plot(3, NaN;
+ X = Xshow, knn_classifier, title = &quot;k=3, n=$(nshow*ndigit)&quot;)
+add_voronoi!(v3, Xshow)</code></pre><img src="7f97896c.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+# savefig(v3, &quot;voronoi-k=3.pdf&quot;)
+
+
+include(&quot;../../../inc/reproduce.jl&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/work/EECS553demo/EECS553demo/docs/Project.toml`
+  <span class="sgr90">[47edcb42] </span>ADTypes v1.24.0
+  <span class="sgr90">[e30172f5] </span>Documenter v1.19.0
+  <span class="sgr90">[2c06267c] </span>EECS553demo v0.0.1 `~/work/EECS553demo/EECS553demo`
+<span class="sgr33">⌅</span> <span class="sgr90">[5c1252a2] </span>GeometryBasics v0.4.11
+  <span class="sgr90">[b964fa9f] </span>LaTeXStrings v1.4.1
+  <span class="sgr90">[98b081ad] </span>Literate v2.21.0
+  <span class="sgr90">[7035ae7a] </span>MIRT v0.18.3
+  <span class="sgr90">[170b2178] </span>MIRTjim v0.26.0
+  <span class="sgr90">[eb30cadb] </span>MLDatasets v0.7.21
+  <span class="sgr90">[b8a86587] </span>NearestNeighbors v0.4.29
+  <span class="sgr90">[429524aa] </span>Optim v2.3.1
+<span class="sgr32">⌃</span> <span class="sgr90">[91a5bcdd] </span>Plots v1.41.4
+  <span class="sgr90">[10745b16] </span>Statistics v1.11.5
+  <span class="sgr90">[e3e34ffb] </span>VoronoiCells v0.4.0
+  <span class="sgr90">[b77e0a4c] </span>InteractiveUtils v1.11.0
+  <span class="sgr90">[37e2e46d] </span>LinearAlgebra v1.12.0
+  <span class="sgr90">[44cfe95a] </span>Pkg v1.12.1
+  <span class="sgr90">[9a3f8284] </span>Random v1.11.0
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr32">⌃</span> and <span class="sgr33">⌅</span> have new versions available. Those with <span class="sgr32">⌃</span> may be upgradable, but those with <span class="sgr33">⌅</span> are restricted by compatibility constraints from upgrading. To see why use `status --outdated`</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../decision-boundary/">« Decision boundaries</a><a class="docs-footer-nextpage" href="../lda47/">LDA demo »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 3 September 2026 02:40">Thursday 3 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

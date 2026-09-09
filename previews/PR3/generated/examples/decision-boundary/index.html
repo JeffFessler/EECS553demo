@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Decision boundaries · EECS553demo</title><meta name="title" content="Decision boundaries · EECS553demo"/><meta property="og:title" content="Decision boundaries · EECS553demo"/><meta property="twitter:title" content="Decision boundaries · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/decision-boundary/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/decision-boundary/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/decision-boundary/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Decision boundaries</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#1D-case"><span>1D case</span></a></li><li><a class="tocitem" href="#2D-case"><span>2D case</span></a></li></ul></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Decision boundaries</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Decision boundaries</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/decision-boundary.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="decision-boundary"><a class="docs-heading-anchor" href="#decision-boundary">Decision boundaries</a><a id="decision-boundary-1"></a><a class="docs-heading-anchor-permalink" href="#decision-boundary" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Decision_boundary">decision boundaries</a> for binary classification in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/decision-boundary.jl"><code>decision-boundary.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/decision-boundary.ipynb"><code>decision-boundary.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/decision-boundary.ipynb"><code>decision-boundary.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;MIRTjim&quot;
+        &quot;Plots&quot;
+        &quot;Random&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using InteractiveUtils: versioninfo
+using LaTeXStrings
+using MIRTjim: jim, prompt
+using Plots: default, gui, savefig, RGB, cgrad
+using Plots: histogram!, plot, plot!, scatter, scatter!
+using Random: seed!
+using Statistics: mean
+default(); default(markersize=6, linewidth=2, markerstrokecolor=:auto, label=&quot;&quot;,
+ markerstrokewidth = 2,
+ tickfontsize=12, labelfontsize=14, legendfontsize=12, titlefontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? prompt(:prompt) : prompt(:draw);</code></pre><h2 id="1D-case"><a class="docs-heading-anchor" href="#1D-case">1D case</a><a id="1D-case-1"></a><a class="docs-heading-anchor-permalink" href="#1D-case" title="Permalink"></a></h2><pre><code class="language-julia hljs">seed!(4)
+n1 = 20
+n2 = 21
+n = n1 + n2
+X = [2 .+ 1.5 * randn(n1); 6 .+ 1.5 * randn(n2)]
+y = [fill(-1, n1); fill(+1, n2)]
+X1 = X[y .== +1]
+X2 = X[y .== -1]
+dmu = mean(X1) - mean(X2)
+
+p1 = plot(
+ xaxis = (L&quot;x&quot;, (-1, 9), 0:4:8),
+ yaxis = (L&quot;f(x)&quot;, (-3, 3), -1:1),
+ legend = :bottomright,
+)
+scatter!(X2, 0*X2 .- 0.05, label=&quot;-1&quot;, marker=:circle, alpha=1, color=:red)
+scatter!(X1, 0*X1 .+ 0.05, label=&quot;+1&quot;, marker=:+, color=:blue)
+x = [-1, dmu-10eps(), dmu+10eps(), 9]
+w = 1
+b = -dmu
+ftil(x) = w * x + b
+f(x) = sign(ftil(x))
+plot!(x, ftil.(x), label=L&quot;\tilde{f}(x)\quad \mathrm{(affine)}&quot;)
+plot!(x, f.(x), label=L&quot;f(x) = \mathrm{sign}(\tilde{f}(x))&quot;)
+
+# savefig(p1, &quot;decision1.pdf&quot;)</code></pre><img src="f7a73c2e.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><h2 id="2D-case"><a class="docs-heading-anchor" href="#2D-case">2D case</a><a id="2D-case-1"></a><a class="docs-heading-anchor-permalink" href="#2D-case" title="Permalink"></a></h2><p>Generate synthetic data from two classes</p><pre><code class="language-julia hljs">if !@isdefined(v1) || true
+    seed!(0)
+    n0 = 90
+    n1 = 80
+    mu0 = [1, 6]
+    mu1 = [5, 4]
+    v0 = mu0 .+ 1*randn(2,n0) # class -1
+    v1 = mu1 .+ 1*randn(2,n1) # class 1
+    nex = 0
+    v0 = [v0; ones(1,n0)] # (3, n0) training data - with intercept
+    v1 = [v1; ones(1,n1)] # (3, n1) training data - with intercept
+end;</code></pre><p>Color map for discriminant function</p><pre><code class="language-julia hljs">RGB255(args...) = RGB((args ./ 255)...)
+color = cgrad([RGB255(255, 0, 0), :black, RGB255(0, 0, 255)]);
+x1 = range(-2, 7, 91)
+x2 = range(1, 9, 81);</code></pre><p>Scatter plot and decision boundary</p><pre><code class="language-julia hljs">function fplot(ff::Matrix, title::AbstractString)
+    v1p = range(-2, 7, 3)
+
+    ps = jim(x1, x2, ff; title,
+     color, alpha = 0.5, yflip = false,
+     xaxis = (L&quot;x_1&quot;, (-2, 7), 0:3:6),
+     yaxis = (L&quot;x_2&quot;, (1, 9), 1:3:8),
+     size = (550, 500), legend = :bottomleft,
+     colorbar_ticks = -1:1,
+    )
+
+    plot!(v1p, 2*v1p .- 1.5, color=:magenta, label=&quot;boundary&quot;)
+    scatter!(v0[1,:], v0[2,:]; color = :red, label=&quot;-1&quot;)
+    scatter!(v1[1,:], v1[2,:]; color = :blue, label=&quot;+1&quot;, marker = :+)
+end
+
+ftil2 = x1 .- 0.5*x2&#39; .- 0.75 # w&#39;x + b
+ffun2 = sign.(ftil2)
+p2ftil = fplot(ftil2, L&quot;\tilde{f}(\mathbf{x})&quot;)
+p2ffun = fplot(ffun2, L&quot;f(\mathbf{x})&quot;)
+p2 = plot(p2ftil, p2ffun, size=(950,400))</code></pre><img src="531809ec.svg" alt="Example block output"/><p>Either <span>$f(x)$</span> or <span>$\tilde{f}(x)$</span> is called the <a href="https://en.wikipedia.org/wiki/Linear_discriminant_analysis">discriminant function</a>, depending on the literature.</p><pre><code class="language-julia hljs"># savefig(p2, &quot;decision2.pdf&quot;)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../../">« Home</a><a class="docs-footer-nextpage" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 3 September 2026 02:40">Thursday 3 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
