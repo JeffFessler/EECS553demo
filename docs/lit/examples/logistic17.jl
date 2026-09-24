@@ -46,7 +46,8 @@ using LinearAlgebra: svd, det
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using Optim: optimize, LBFGS, minimizer
-using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
+using Plots: default, gui, savefig, RGB, cgrad, twinx
+using Plots: plot, plot!, scatter!, histogram!
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
@@ -66,6 +67,7 @@ and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
 if !@isdefined(data) # || true
     digitn = [1,7]
+#src digitn = [4,9]
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
@@ -84,7 +86,7 @@ pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
 
 digit_str = join(digitn); # string for file names
-## savefig(pd, "lda$digit_str-digit.pdf")
+## savefig(pd, "lr$digit_str-digit.pdf")
 
 # Partition data into train / validate / test
 ntrain = 200
@@ -104,6 +106,8 @@ dtest1 = data[:,:,tmp[itest1],:];
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
 pm = jim(dmean; title="Mean image")
 
+## savefig(pm, "lr$digit_str-mean.pdf")
+
 
 #=
 ## PCA-based dimensionality reduction
@@ -111,11 +115,16 @@ Use two components for easy visualization
 =#
 X = reshape(dtrain .- dmean, nx*ny, :) # unfold
 K = 2
+#src K = 7 # for digits 4,9
 U = svd(X).U[:,1:K];
 
 # Show basis vectors
 tmp = reshape(U, nx, ny, K)
-pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
+pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color=:cividis,
+ size=(700, K==2 ? 400 : 150), colorbar_ticks = [0])
+
+## savefig(pu, "lr$digit_str-basis-$K.pdf")
+prompt()
 
 
 #=
@@ -152,6 +161,9 @@ pp = plot(petr, pete; size = (950, 500))
 #
 prompt()
 
+## savefig(pp, "lr$digit_str-embed.pdf")
+
+
 #=
 ## Logistic classifier design
 First set up the ERM cost function
@@ -182,7 +194,7 @@ erm_cost = model_setup(Xtrain[:,:,1], Xtrain[:,:,2], 0);
 Make 2D plot for ``θ = [0, w_1, w_2]``
 =#
 ws = range(-0, 3, 31)
-cost2 = [erm_cost([0, w1, w2]) for w1 in ws, w2 in ws]
+cost2 = [erm_cost([0; w1; w2; zeros(K-2)]) for w1 in ws, w2 in ws]
 pc = jim(ws, ws, cost2; title = "J(θ)",
  xlabel = L"w_1", ylabel = L"w_2", color = :viridis, yflip=:false)
 tmp = argmin(cost2)
@@ -199,7 +211,7 @@ which is unimportant for this d=2 setting,
 but is useful when applying QN
 to the original data.
 =#
-θ0 = zeros(3)
+θ0 = zeros(K+1)
 opt = optimize(erm_cost, θ0, LBFGS(); autodiff = AutoForwardDiff())
 θhat = minimizer(opt)
 
@@ -219,20 +231,21 @@ end;
 
 #=
 ## Plot decision boundary
+(Only makes sense for K=2.)
 =#
 α = 0.2
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
+sigma(x) = 1 / (1 + exp(-x))
 function lr_plot(train_error::Real = NaN, test_error::Real = NaN;
     classifier::Function = lr_classify1,
     title::AbstractString =
         "L.R. train error=$train_error %, test error = $test_error %",
     θ::Vector = θhat,
 )
-#src tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    tmp = [lr_discriminant([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    sigma(x) = 1 / (1 + exp(-x))
+#src tmp = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+    tmp = [lr_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
     tmp = sigma.(tmp)
 
     p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
@@ -270,8 +283,27 @@ err1 = [train_error valid_error test1_error]
 =#
 p0 = lr_plot(train_error, test1_error)
 
+prompt()
+## savefig(p0, "lr$digit_str-v1.pdf")
+
+
+#=
+## Histograms of discriminant values
+=#
+ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
+    title = "Test data discriminants, K=$K")
+tmp = Vector{Any}(undef, ndigit)
+for id in 1:ndigit
+    tmp[id] = map(lr_discriminant, eachcol(Xtest1[:,:,id]))
+    histogram!(ph, tmp[id], bins = 80,
+        color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
+        label = "$(digitn[id])")
+end
+plot!(twinx(), sigma; color = :black, linewidth = 2,
+ yaxis = ("P(Y=$(digitn[2]); x)", (0,1.02), 0:0.5:1))
+ph
+
+## savefig(ph, "lr$digit_str-ph-$K.pdf")
 
 #
 prompt()
-
-## savefig(p0, "lr$digit_str-v1.pdf")
