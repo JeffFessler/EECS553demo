@@ -20,7 +20,6 @@ if you are using any of the following packages for the first time.
 if false
     import Pkg
     Pkg.add([
-        "ADTypes"
         "InteractiveUtils"
         "LaTeXStrings"
         "LinearAlgebra"
