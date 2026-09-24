@@ -120,9 +120,11 @@ U = svd(X).U[:,1:K];
 
 # Show basis vectors
 tmp = reshape(U, nx, ny, K)
-pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
+pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color=:cividis,
+ size=(700, K==2 ? 400 : 150), colorbar_ticks = [0])
 
-## savefig(pu, "lr$digit_str-basis.pdf")
+## savefig(pu, "lr$digit_str-basis-K.pdf")
+prompt()
 
 
 #=
