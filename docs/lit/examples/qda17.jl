@@ -1,5 +1,5 @@
 #=
-# [QDA demo](@id lda17)
+# [QDA demo](@id qda17)
 
 Illustrate
 [Quadratic discriminant analysis (QDA)](https://en.wikipedia.org/wiki/Quadratic_classifier#Quadratic_discriminant_analysis)
@@ -44,7 +44,7 @@ using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
- tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)
 
 # The following line is helpful when running this file as a script;
 # this way it will prompt user to hit a key after each figure is displayed.
@@ -235,14 +235,15 @@ end
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
-function qda_plot(error::Real;
+function qda_plot(train_error::Real = NaN, test_error::Real = NaN;
     classifier::Function = qda_classify1,
-    title::AbstractString = "QDA train error=$error %",
+    title::AbstractString =
+        "QDA train error=$train_error %, test error = $test_error %",
     Σs::Vector{<:Any} = Σ,
 )
-    error = round(error; sigdigits=2)
     tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp; color, title, prompt = false, args...)
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
+        colorbar_ticks = digitn, args...)
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
             color = colors[id],
@@ -261,7 +262,8 @@ for train / validate / test
 =#
 function errors(data, label; classifier::Function = qda_classify1)
     data = reshape(data, K, :) # (d, n)
-    return 100 * count(classifier.(eachcol(data)) .!= label) / size(data, 2)
+    err = count(classifier.(eachcol(data)) .!= label) / size(data, 2)
+    return round(100 * err; sigdigits = 3)
 end
 train_error = errors(Xtrain, ytrain)
 valid_error = errors(Xvalid, yvalid)
@@ -272,7 +274,7 @@ err1 = [ train_error valid_error test1_error ]
 #=
 ## Plot data and decision regions:
 =#
-p0 = qda_plot(train_error)
+p0 = qda_plot(train_error, test1_error)
 
 #
 prompt()
