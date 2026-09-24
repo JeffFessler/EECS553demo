@@ -171,14 +171,15 @@ function model_setup(data0::AbstractMatrix, data1::AbstractMatrix, reg::Real)
         sum(nl_sigma0, θ' * data0_bar) +
         sum(nl_sigma1, θ' * data1_bar)) + reg/2 * sum(abs2, θ)
     return cost
-end
+end;
 
 # No regularization for now because low dimensional space:
-erm_cost = model_setup(Xtrain[:,:,1], Xtrain[:,:,2], 0)
+erm_cost = model_setup(Xtrain[:,:,1], Xtrain[:,:,2], 0);
 
 
 #=
-## Explore cost function of θ = [0, w1, w2]
+## Explore cost function
+Make 2D plot for ``θ = [0, w_1, w_2]``
 =#
 ws = range(-0, 3, 31)
 cost2 = [erm_cost([0, w1, w2]) for w1 in ws, w2 in ws]
@@ -206,12 +207,12 @@ opt = optimize(erm_cost, θ0, LBFGS(); autodiff = AutoForwardDiff())
 # Logistic regression discriminant function
 function lr_discriminant(x::AbstractVector; θ::Vector = θhat)
     return θhat' * [1; x]
-end
+end;
 
 # Logistic regression classifier that returns digit labels (not 0,1)
 function lr_classify1(x::AbstractVector; θ::Vector = θhat)
     return lr_discriminant(x; θ) ≥ 0 ? digitn[2] : digitn[1] # labels!
-end
+end;
 
 #src lr_classify1([0,0]) # test
 
@@ -229,9 +230,14 @@ function lr_plot(train_error::Real = NaN, test_error::Real = NaN;
         "L.R. train error=$train_error %, test error = $test_error %",
     θ::Vector = θhat,
 )
-    tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
+#src tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    tmp = [lr_discriminant([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    sigma(x) = 1 / (1 + exp(-x))
+    tmp = sigma.(tmp)
+
     p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
-        colorbar_ticks = digitn, args...)
+        clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
+        args...)
     for id in 1:ndigit
         scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
             color = colors[id],
@@ -256,13 +262,14 @@ end
 train_error = errors(Xtrain, ytrain)
 valid_error = errors(Xvalid, yvalid)
 test1_error = errors(Xtest1, ytest1)
-err1 = [ train_error valid_error test1_error ]
+err1 = [train_error valid_error test1_error]
 
 
 #=
 ## Plot data and decision regions:
 =#
 p0 = lr_plot(train_error, test1_error)
+
 
 #
 prompt()
