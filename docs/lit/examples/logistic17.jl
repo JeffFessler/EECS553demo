@@ -290,7 +290,7 @@ prompt()
 #=
 ## Histograms of discriminant values
 =#
-ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count", widen = true,
+ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
     title = "Test data discriminants, K=$K")
 tmp = Vector{Any}(undef, ndigit)
 for id in 1:ndigit
@@ -299,10 +299,8 @@ for id in 1:ndigit
         color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
         label = "$(digitn[id])")
 end
-x = range(floor(minimum(minimum, tmp)), ceil(maximum(maximum, tmp)), 51)
-# x = K == 2 ? range(-9, 18, 51) : range(-11, 11, 51)
-plot!(twinx(), x, sigma.(x); color = :black, linewidth = 2, widen = true,
- yaxis = ("P(Y=$(digitn[2]); x)", (0,1), 0:0.5:1))
+plot!(twinx(), sigma; color = :black, linewidth = 2,
+ yaxis = ("P(Y=$(digitn[2]); x)", (0,1.02), 0:0.5:1))
 ph
 
 ## savefig(ph, "lr$digit_str-ph-$K.pdf")
