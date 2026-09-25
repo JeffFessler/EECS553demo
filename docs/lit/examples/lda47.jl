@@ -40,7 +40,8 @@ using LaTeXStrings: @L_str, latexstring
 using LinearAlgebra: svd
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
-using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
+using Plots: default, gui, savefig, twinx
+using Plots: plot, plot!, scatter!, histogram!, RGB, cgrad
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
@@ -140,12 +141,14 @@ petr = plot(; title="Train data", args...)
 pete = plot(; title="Test data", args...)
 
 colors = (:blue, :red)
-for id in 1:ndigit
-    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label="$(digitn[id])",
-      color = colors[id])
-    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label="$(digitn[id])",
-      color = colors[id])
+function add_points!(p, X::AbstractArray{<:Number,3}; colors::Tuple = colors)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id];
+            color = colors[id], label="$(digitn[id])")
+    end
 end
+add_points!(petr, Xtrain)
+add_points!(pete, Xtest1)
 pp = plot(petr, pete; size = (950, 500))
 
 ## savefig(pp, "lda$digit_str-data.pdf")
@@ -188,19 +191,15 @@ end;
 # Plot de-meaned data:
 Xdemean = cat([Xtrain[:,:,id] .- means[id] for id in 1:ndigit]..., dims=3)
 
-pdm = plot(; title="Train data de-meaned", args...)
-for id in 1:ndigit
-    scatter!(pdm, Xdemean[1,:,id], Xdemean[2,:,id],
-        color = colors[id], label = "$(digitn[id])",
-    )
-end;
+pc = plot(; title = "Train data: de-meaned", args...)
+add_points!(pc, Xdemean)
 
 # Add covariance ellipse:
 tmp = reshape(Xdemean, K, ntrain*ndigit) # pool all data
 Σ = tmp * tmp' / size(tmp,2) # sample covariance
 
-pc = deepcopy(pdm)
-add_ellipse!(pc, zeros(2), Σ; label="½ x'Σ⁻¹x = 1", legend = :topleft, legendfontsize = 12)
+add_ellipse!(pc, zeros(2), Σ;
+    label = "½ x'Σ⁻¹x = 1", legend = :topleft, legendfontsize = 12)
 
 #
 prompt()
@@ -213,20 +212,27 @@ prompt()
 brute force with argmax
 =#
 
-# LDA classifier v1; brute-force way:
+# LDA discriminant v1; brute-force way:
 sqrtΣinv = inv(sqrt(Σ))
-function lda_classify1(
+function lda_discriminant(
     x::AbstractVector;
     means::Vector{<:Vector} = means,
     sqrtΣinv::AbstractMatrix = sqrtΣinv,
-    prob::AbstractVector = fill(0.5, length(means)),
+    prob::AbstractVector = fill(1/ndigit, length(means)), # equal here
 )
     score = copy(prob) # πₖ
     for id in 1:length(means)
         r = sqrtΣinv * (x - means[id]) # whitened residual
-        score[id] *= exp.(-(1/2) * sum(abs2, r))
+        score[id] *= exp(-(1/2) * sum(abs2, r))
     end
-    return digitn[argmax(score)]
+    return score ./ sum(score) # normalize by total probability
+end
+
+
+# LDA classifier v1; brute-force way:
+function lda_classify1(x::AbstractVector; kwargs...)
+    tmp = lda_discriminant(x; kwargs...)
+    return digitn[argmax(tmp)]
 end
 #src lda_classify1([0,0]) # test
 
@@ -237,17 +243,16 @@ x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
 function lda_plot(train_error::Real = NaN, test_error::Real = NaN;
     classifier::Function = lda_classify1,
+    colorbar_ticks = digitn,
+    clim = minmax(digitn),
     title::AbstractString =
         "LDA train error=$train_error %, test error = $test_error %",
 )
     tmp = [classifier([x1; x2]) for x1 in x1_range, x2 in x2_range]
-    p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
-        colorbar_ticks = digitn, args...)
+    p = jim(x1_range, x2_range, tmp;
+        color, clim, title, prompt = false, colorbar_ticks, args...)
+    add_points!(p, Xtrain)
     for id in 1:ndigit
-        scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
-            color = colors[id],
-            label = "$(digitn[id])",
-        )
         add_ellipse!(p, means[id], Σ)
     end
     plot_means!(p, dolabel = false)
@@ -273,12 +278,41 @@ err1 = [ train_error valid_error test1_error ]
 #=
 ## Plot data and decision regions
 =#
-p0 = lda_plot(train_error, test1_error)
+p0 = lda_plot(train_error, test1_error;
+    classifier = x -> lda_discriminant(x)[2], # show posterior probability
+    colorbar_ticks = 0:0.5:1, clim = (0,1),
+)
 
 #
 prompt()
 
+## savefig(p0, "lda$digit_str-disc.pdf")
 ## savefig(p0, "lda$digit_str-v1.pdf")
+
+
+#=
+Histograms of discriminant values
+=#
+
+ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
+    title = "LDA Test data discriminant", legend = :topleft)
+tmp = Vector{Any}(undef, ndigit)
+ptmp = Vector{Any}(undef, ndigit)
+for id in 1:ndigit
+    function dfun(x) # inefficient way to get discriminant values!
+       tmp = lda_discriminant(x)
+       return log(tmp[2]/tmp[1])
+    end
+    tmp[id] = map(dfun, eachcol(Xtest1[:,:,id]))
+    ptmp[id] = map(x -> lda_discriminant(x)[2], eachcol(Xtest1[:,:,id]))
+    histogram!(ph, tmp[id], bins = 80,
+        color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
+        label = "$(digitn[id])")
+    scatter!(twinx(), tmp[id], ptmp[id]; color = :black, markersize = 2,
+        yaxis = ("Posterior: P(Y=$(digitn[2]) ∣ x)", (0,1.02), 0:0.5:1))
+end
+ph
+
 
 #=
 Extension to the more efficient sign(⟨w,x⟩ + b) approach
