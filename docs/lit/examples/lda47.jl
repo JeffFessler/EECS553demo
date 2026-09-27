@@ -113,7 +113,7 @@ U = svd(X).U[:,1:K];
 
 # Show basis vectors
 tmp = reshape(U, nx, ny, K)
-pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
+pu = jim(tmp; title="Basis functions, K=$K", color=:bwr, size=(700,400))
 
 ## savefig(pu, "lda$digit_str-u.pdf")
 
@@ -291,7 +291,7 @@ prompt()
 
 
 #=
-Histograms of discriminant values
+## Histograms of discriminant values
 =#
 
 ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
