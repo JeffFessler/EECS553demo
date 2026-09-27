@@ -291,7 +291,7 @@ prompt()
 
 
 #=
-Histograms of discriminant values
+## Histograms of discriminant values
 =#
 
 ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
