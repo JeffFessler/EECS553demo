@@ -114,7 +114,7 @@ U = svd(X).U[:,1:K];
 
 # Show basis vectors
 tmp = reshape(U, nx, ny, K)
-pu = jim(tmp; title="Basis functions, K=$K", color=:cividis, size=(700,400))
+pu = jim(tmp; title="Basis functions, K=$K", color=:bwr, size=(700,400))
 
 ## savefig(pu, "knn-u.pdf")
 
