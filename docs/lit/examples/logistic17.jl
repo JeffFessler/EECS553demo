@@ -66,7 +66,9 @@ This code will automatically download the data from web if needed
 and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
 if !@isdefined(data) # || true
-    digitn = [1,7]
+    if !@isdefined(digitn)
+        digitn = [1,7]
+    end
 #src digitn = [4,9]
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
@@ -114,14 +116,16 @@ pm = jim(dmean; title="Mean image")
 Use two components for easy visualization
 =#
 X = reshape(dtrain .- dmean, nx*ny, :) # unfold
-K = 2
+if !@isdefined(K)
+    K = 2
+end
 #src K = 7 # for digits 4,9
 U = svd(X).U[:,1:K];
 
 # Show basis vectors
 tmp = reshape(U, nx, ny, K)
-pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color=:cividis,
- size=(700, K==2 ? 400 : 150), colorbar_ticks = [0])
+pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color = :bwr,
+    size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
 
 ## savefig(pu, "lr$digit_str-basis-$K.pdf")
 prompt()
@@ -292,10 +296,10 @@ prompt()
 =#
 ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
     title = "Test data discriminants, K=$K")
-tmp = Vector{Any}(undef, ndigit)
+discs = Vector{Any}(undef, ndigit)
 for id in 1:ndigit
-    tmp[id] = map(lr_discriminant, eachcol(Xtest1[:,:,id]))
-    histogram!(ph, tmp[id], bins = 80,
+    discs[id] = map(lr_discriminant, eachcol(Xtest1[:,:,id]))
+    histogram!(ph, discs[id], bins = 80,
         color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
         label = "$(digitn[id])")
 end
