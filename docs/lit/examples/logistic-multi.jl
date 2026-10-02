@@ -69,6 +69,7 @@ if !@isdefined(data) || true
     if !@isdefined(digitn)
         digitn = [0, 1, 7]
     end
+    digit_str = join(digitn); # string for file names
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
@@ -86,7 +87,6 @@ end
 pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar = nothing, size = (600,200), tickfontsize = 6, ncol = 10)
 
-digit_str = join(digitn); # string for file names
 ## savefig(pd, "mlr$digit_str-digit.pdf")
 
 
@@ -127,7 +127,6 @@ pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color = :bwr,
     size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
 
 ## savefig(pu, "mlr$digit_str-basis-$K.pdf")
-prompt()
 
 
 #=
@@ -169,12 +168,16 @@ prompt()
 ## savefig(pp, "mlr$digit_str-embed.pdf")
 
 
-# log of softmax function
+#=
+## Helper functions
+# softmax function and its log
+=#
 function log_softmax(x::AbstractVector{<:Number})
     shifted_x = x .- maximum(x)
     return shifted_x .- log.(sum(exp, shifted_x))
 end
-softmax(x::AbstractVector{<:Number}) = exp.(log_softmax(x))
+softmax(x::AbstractVector{<:Number}) = exp.(log_softmax(x));
+
 
 #=
 Cross-entropy between a 1-hot vector
@@ -189,7 +192,7 @@ used in multinomial logistic regression.
 =#
 function onehot_cross_entropy(label::Int, x::AbstractVector{<:Number})
    return -log_softmax(x)[label]
-end
+end;
 
 
 #=
