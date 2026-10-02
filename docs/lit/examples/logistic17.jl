@@ -104,7 +104,7 @@ dtrain = data[:,:,tmp[itrain],:]
 dvalid = data[:,:,tmp[ivalid],:]
 dtest1 = data[:,:,tmp[itest1],:];
 
-# Sample means of training images:
+# Sample mean of training images:
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
 pm = jim(dmean; title="Mean image")
 
