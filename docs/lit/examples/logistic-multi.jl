@@ -184,7 +184,7 @@ and the softmax of a discriminant vector
 - `x` should be a vector of length `ndigit`
 This corresponds to
 (one term in)
-the negative log-likehood
+the negative log-likelihood
 used in multinomial logistic regression.
 =#
 function onehot_cross_entropy(label::Int, x::AbstractVector{<:Number})
@@ -197,15 +197,15 @@ end
 First set up the ERM cost function
 (regularized negative log-likelihood).
 
-- `datas` is vector of data matrices that each should be d × nₖ
+- `vdata` is vector of data matrices that each should be d × nₖ
 =#
-function model_setup(datas::AbstractVector{<:AbstractMatrix}, reg::Real)
-    length(datas) = ndigit || throw("dimension")
-    ns = [size(X, 2) for X in datas] # sample sizes for each class
+function model_setup(vdata::AbstractVector{<:AbstractMatrix}, reg::Real)
+    length(vdata) = ndigit || throw("dimension")
+    ns = [size(X, 2) for X in vdata] # sample sizes for each class
     n = sum(ns) # total number of training samples
     Xbar = Vector{Any}(undef, ndigit)
     for id in 1:ndigit
-        Xbar[id] = [ones(1, ns[id]); datas[id]] # prepend 1
+        Xbar[id] = [ones(1, ns[id]); vdata[id]] # prepend 1
     end
 
     function cost(θ::AbstractVector)
