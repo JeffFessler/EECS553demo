@@ -128,7 +128,6 @@ pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color = :bwr,
     size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
 
 ## savefig(pu, "lr$digit_str-basis-$K.pdf")
-prompt()
 
 
 #=
@@ -162,10 +161,9 @@ for id in 1:ndigit
 end
 pp = plot(petr, pete; size = (950, 500))
 
-#
+## savefig(pp, "lr$digit_str-embed.pdf")
 prompt()
 
-## savefig(pp, "lr$digit_str-embed.pdf")
 
 
 #=
@@ -287,8 +285,8 @@ err1 = [train_error valid_error test1_error]
 =#
 p0 = lr_plot(train_error, test1_error)
 
-prompt()
 ## savefig(p0, "lr$digit_str-v1.pdf")
+prompt()
 
 
 #=
@@ -308,6 +306,3 @@ plot!(twinx(), sigma; color = :black, linewidth = 2,
 ph
 
 ## savefig(ph, "lr$digit_str-ph-$K.pdf")
-
-#
-prompt()
