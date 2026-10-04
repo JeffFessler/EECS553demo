@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Multinomial logistic regression demo · EECS553demo</title><meta name="title" content="Multinomial logistic regression demo · EECS553demo"/><meta property="og:title" content="Multinomial logistic regression demo · EECS553demo"/><meta property="twitter:title" content="Multinomial logistic regression demo · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/logistic-multi/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/logistic-multi/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/logistic-multi/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li class="is-active"><a class="tocitem" href>Multinomial logistic regression demo</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Visualize-embedded-data"><span>Visualize embedded data</span></a></li><li><a class="tocitem" href="#Helper-functions"><span>Helper functions</span></a></li><li class="toplevel"><a class="tocitem" href="#softmax-function-and-its-log"><span>softmax function and its log</span></a></li><li><a class="tocitem" href="#Multinomial-logistic-classifier-design"><span>Multinomial logistic classifier design</span></a></li><li><a class="tocitem" href="#Minimize-cost"><span>Minimize cost</span></a></li><li><a class="tocitem" href="#Classification-errors"><span>Classification errors</span></a></li><li><a class="tocitem" href="#Plot-multinomial-probabilities"><span>Plot multinomial probabilities</span></a></li><li><a class="tocitem" href="#Plot-decision-boundaries"><span>Plot decision boundaries</span></a></li></ul></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Multinomial logistic regression demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Multinomial logistic regression demo</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/logistic-multi.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="logistic-multi"><a class="docs-heading-anchor" href="#logistic-multi">Multinomial logistic regression demo</a><a id="logistic-multi-1"></a><a class="docs-heading-anchor-permalink" href="#logistic-multi" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Logistic_regression">Multi-class logistic regression</a> with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/logistic-multi.jl"><code>logistic-multi.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/logistic-multi.ipynb"><code>logistic-multi.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/logistic-multi.ipynb"><code>logistic-multi.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;ADTypes&quot;
+        &quot;ForwardDiff&quot;
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;Optim&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using ADTypes: AutoForwardDiff
+import ForwardDiff
+using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: svd, det
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using Optim: optimize, LBFGS, minimizer
+using Plots: default, gui, savefig, RGB, cgrad, twinx
+using Plots: plot, plot!, scatter!, histogram!, contour!
+using Random: randperm, seed!
+using Statistics: mean
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data) || true
+    if !@isdefined(digitn)
+        digitn = [0, 1, 7]
+    end
+    digit_str = join(digitn); # string for file names
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # function to extract the 1st `nrep` examples of digit n:
+    data = n -&gt; dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
+    data = cat(dims=4, data.(digitn)...)
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data)
+    data = data[:,2:ny,:,:] # make images non-square to force debug
+    ny = size(data,2)
+    size(data) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 3)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar = nothing, size = (600,200), tickfontsize = 6, ncol = 10)
+
+# savefig(pd, &quot;mlr$digit_str-digit.pdf&quot;)</code></pre><img src="df7ddf78.svg" alt="Example block output"/><p>Partition data into train / validate / test</p><pre><code class="language-julia hljs">ntrain = 200
+nvalid = 100
+ntest1 = 600
+seed!(0)
+tmp = randperm(nrep)
+itrain = (1:ntrain)
+ivalid = (1:nvalid) .+ ntrain
+itest1 = (1:ntest1) .+ (ntrain + nvalid)
+dtrain = data[:,:,tmp[itrain],:]
+dvalid = data[:,:,tmp[ivalid],:]
+dtest1 = data[:,:,tmp[itest1],:];</code></pre><p>Sample mean of all training images:</p><pre><code class="language-julia hljs">dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
+pm = jim(dmean; title=&quot;Mean image&quot;)
+
+# savefig(pm, &quot;mlr$digit_str-mean.pdf&quot;)</code></pre><img src="aa108f1e.svg" alt="Example block output"/><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><p>Use two components for easy visualization</p><pre><code class="language-julia hljs">X = reshape(dtrain .- dmean, nx*ny, :) # unfold
+if !@isdefined(K)
+    K = 2
+end
+U = svd(X).U[:,1:K];</code></pre><p>Show basis vectors</p><pre><code class="language-julia hljs">tmp = reshape(U, nx, ny, K)
+pu = jim(tmp; nrow=1, title=&quot;Basis functions, K=$K&quot;, color = :bwr,
+    size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
+
+# savefig(pu, &quot;mlr$digit_str-basis-$K.pdf&quot;)</code></pre><img src="3a7bd1f8.svg" alt="Example block output"/><h2 id="Visualize-embedded-data"><a class="docs-heading-anchor" href="#Visualize-embedded-data">Visualize embedded data</a><a id="Visualize-embedded-data-1"></a><a class="docs-heading-anchor-permalink" href="#Visualize-embedded-data" title="Permalink"></a></h2><pre><code class="language-julia hljs">embed(data, n) = reshape(U&#39; * reshape(data .- dmean, nx*ny, :), K, n, :)
+Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
+Xvalid = embed(dvalid, nvalid)
+Xtest1 = embed(dtest1, ntest1)
+labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
+ytrain = labeler(ntrain)
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1)
+
+xlim = (-9,6)
+ylim = (-6,8)
+args = (;
+    xaxis = (L&quot;x_1&quot;, xlim, -8:4:8),
+    yaxis = (L&quot;x_2&quot;, ylim, -8:4:8),
+    aspect_ratio = 1,
+    size = (550, 500),
+)
+
+petr = plot(; title = &quot;Train data&quot;, args...)
+pete = plot(; title = &quot;Test data&quot;, args...)
+
+colors = (:red, :green, :blue)
+for id in 1:ndigit
+    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id];
+        label = &quot;$(digitn[id])&quot;, color = colors[id])
+    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id];
+        label = &quot;$(digitn[id])&quot;, color = colors[id])
+end
+pp = plot(petr, pete; size = (950, 500))</code></pre><img src="4f790d00.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+# savefig(pp, &quot;mlr$digit_str-embed.pdf&quot;)</code></pre><h2 id="Helper-functions"><a class="docs-heading-anchor" href="#Helper-functions">Helper functions</a><a id="Helper-functions-1"></a><a class="docs-heading-anchor-permalink" href="#Helper-functions" title="Permalink"></a></h2><h1 id="softmax-function-and-its-log"><a class="docs-heading-anchor" href="#softmax-function-and-its-log">softmax function and its log</a><a id="softmax-function-and-its-log-1"></a><a class="docs-heading-anchor-permalink" href="#softmax-function-and-its-log" title="Permalink"></a></h1><pre><code class="language-julia hljs">function log_softmax(x::AbstractVector{&lt;:Number})
+    shifted_x = x .- maximum(x)
+    return shifted_x .- log.(sum(exp, shifted_x))
+end
+softmax(x::AbstractVector{&lt;:Number}) = exp.(log_softmax(x));</code></pre><p>Cross-entropy between a 1-hot vector (corresponding to an integer class label) and the softmax of a discriminant vector</p><ul><li><code>label</code> should be in <code>{1,…,ndigit}</code></li><li><code>x</code> should be a vector of length <code>ndigit</code></li></ul><p>This corresponds to (one term in) the negative log-likelihood used in multinomial logistic regression.</p><pre><code class="language-julia hljs">function onehot_cross_entropy(label::Int, x::AbstractVector{&lt;:Number})
+   return -log_softmax(x)[label]
+end;</code></pre><h2 id="Multinomial-logistic-classifier-design"><a class="docs-heading-anchor" href="#Multinomial-logistic-classifier-design">Multinomial logistic classifier design</a><a id="Multinomial-logistic-classifier-design-1"></a><a class="docs-heading-anchor-permalink" href="#Multinomial-logistic-classifier-design" title="Permalink"></a></h2><p>First set up the ERM cost function (regularized negative log-likelihood).</p><ul><li><code>vdata</code> is vector of data matrices that each should be d × nₖ</li></ul><pre><code class="language-julia hljs">function model_setup(vdata::AbstractVector{&lt;:AbstractMatrix}, reg::Real)
+    length(vdata) = ndigit || throw(&quot;dimension&quot;)
+    ns = [size(X, 2) for X in vdata] # sample sizes for each class
+    n = sum(ns) # total number of training samples
+    Xbar = Vector{Any}(undef, ndigit)
+    for id in 1:ndigit
+        Xbar[id] = [ones(1, ns[id]); vdata[id]] # prepend 1
+    end
+
+    function cost(θ::AbstractVector)
+        W = reshape(θ, ndigit, K+1) # θ = vec(W)
+        total = 0
+        for id in 1:ndigit
+            tmp = W * Xbar[id] # discriminants
+            fun = x -&gt; onehot_cross_entropy(id, x)
+            total += sum(fun, eachcol(tmp))
+        end
+        return (1/n) * total + reg/2 * sum(abs2, θ)
+    end
+
+    return cost
+end;</code></pre><p>Regularization is essential because <code>W</code> is redundant</p><pre><code class="language-julia hljs">lambda = 1
+erm_cost = model_setup(eachslice(Xtrain, dims=3), lambda);</code></pre><h2 id="Minimize-cost"><a class="docs-heading-anchor" href="#Minimize-cost">Minimize cost</a><a id="Minimize-cost-1"></a><a class="docs-heading-anchor-permalink" href="#Minimize-cost" title="Permalink"></a></h2><p>Use LBFGS quasi-Newton (QN) method. The &quot;L&quot; is for limited memory which is unimportant for this d=2 setting, but is useful when applying QN to the original data.</p><pre><code class="language-julia hljs">W0 = zeros(ndigit, K+1) # todo: think about better init?
+θ0 = vec(W0) # because `optimize` wants vectors
+opt = optimize(erm_cost, θ0, LBFGS(); autodiff = AutoForwardDiff())
+θhat = minimizer(opt)
+What = reshape(θhat, size(W0))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Float64}:
+ -0.00237028  -0.328809   -0.111557
+ -0.0124322    0.257948   -0.206705
+  0.0148025    0.0708615   0.318262</code></pre><p>Multinomial logistic regression discriminant vector</p><pre><code class="language-julia hljs">function mlr_discriminant(x::AbstractVector; W::AbstractMatrix = What)
+    return softmax(What * [1; x])
+end;</code></pre><p>Logistic regression classifier that returns digit labels (not class index!)</p><pre><code class="language-julia hljs">function mlr_classify1(x::AbstractVector; kwargs...)
+    return digitn[argmax(mlr_discriminant(x; kwargs...))]
+end;</code></pre><h2 id="Classification-errors"><a class="docs-heading-anchor" href="#Classification-errors">Classification errors</a><a id="Classification-errors-1"></a><a class="docs-heading-anchor-permalink" href="#Classification-errors" title="Permalink"></a></h2><p>for train / validate / test</p><pre><code class="language-julia hljs">function errors(data, label; classifier::Function = mlr_classify1)
+    data = reshape(data, K, :) # (d, n)
+    err = count(classifier.(eachcol(data)) .!= label) / size(data, 2)
+    return round(100 * err; sigdigits = 3)
+end
+train_error = errors(Xtrain, ytrain)
+valid_error = errors(Xvalid, yvalid)
+test1_error = errors(Xtest1, ytest1)
+err1 = [train_error valid_error test1_error]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×3 Matrix{Float64}:
+ 5.83  6.67  5.61</code></pre><h2 id="Plot-multinomial-probabilities"><a class="docs-heading-anchor" href="#Plot-multinomial-probabilities">Plot multinomial probabilities</a><a id="Plot-multinomial-probabilities-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-multinomial-probabilities" title="Permalink"></a></h2><p>(Only makes sense for K=2.)</p><pre><code class="language-julia hljs">α = 0.7
+x1_range = range(xlim..., 201)
+x2_range = range(ylim..., 203)
+tmp = [mlr_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+tmp = [RGB(((1-α) .+ α*p)...) for p in tmp]
+
+p0 = jim(x1_range, x2_range, tmp;
+    title = &quot;M.L.R. train error = $train_error %, test error = $test1_error %&quot;,
+    prompt = false, xy_warn = false, args...,
+)
+
+for id in 1:ndigit
+    scatter!(p0, Xtrain[1,:,id], Xtrain[2,:,id],
+        color = colors[id], # markerstrokecolor = :black,
+        label = &quot;$(digitn[id])&quot;,
+    )
+end;</code></pre><h2 id="Plot-decision-boundaries"><a class="docs-heading-anchor" href="#Plot-decision-boundaries">Plot decision boundaries</a><a id="Plot-decision-boundaries-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-decision-boundaries" title="Permalink"></a></h2><pre><code class="language-julia hljs">tmp = [mlr_classify1([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+contour!(p0, x1_range, x2_range, tmp&#39;; color = :black, colorbar = :none)
+
+p0
+# savefig(p0, &quot;mlr$digit_str-softmax.pdf&quot;)</code></pre><img src="56d5ec2f.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lda47/">« LDA demo</a><a class="docs-footer-nextpage" href="../logistic-sparse/">Sparse logistic regression with POGM »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Sunday 4 October 2026 01:14">Sunday 4 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
