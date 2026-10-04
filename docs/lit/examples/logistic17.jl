@@ -161,8 +161,9 @@ for id in 1:ndigit
 end
 pp = plot(petr, pete; size = (950, 500))
 
-## savefig(pp, "lr$digit_str-embed.pdf")
+#
 prompt()
+## savefig(pp, "lr$digit_str-embed.pdf")
 
 
 
@@ -285,8 +286,9 @@ err1 = [train_error valid_error test1_error]
 =#
 p0 = lr_plot(train_error, test1_error)
 
-## savefig(p0, "lr$digit_str-v1.pdf")
+#
 prompt()
+## savefig(p0, "lr$digit_str-v1.pdf")
 
 
 #=
