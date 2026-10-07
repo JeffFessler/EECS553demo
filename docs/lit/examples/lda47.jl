@@ -79,6 +79,7 @@ end
 pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
 
+#
 digit_str = join(digitn); # string for file names
 ## savefig(pd, "lda$digit_str-digit.pdf")
 

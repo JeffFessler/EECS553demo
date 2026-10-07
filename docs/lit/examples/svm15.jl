@@ -1,8 +1,8 @@
 #=
-# [Logistic regression demo](@id logistic17)
+# [SVM demo](@id svm15)
 
 Illustrate
-[logistic regression](https://en.wikipedia.org/wiki/Logistic_regression)
+[SVM classification](https://en.wikipedia.org/wiki/Support_vector_machine)
 with MNIST hand-written digit images
 in Julia.
 =#
@@ -25,6 +25,7 @@ if false
         "ForwardDiff"
         "InteractiveUtils"
         "LaTeXStrings"
+        "LIBSVM"
         "LinearAlgebra"
         "MIRTjim"
         "MLDatasets"
@@ -38,20 +39,22 @@ end
 # Tell Julia to use the following packages.
 # Run `Pkg.add()` in the preceding code block first, if needed.
 
-using ADTypes: AutoForwardDiff
+#src using ADTypes: AutoForwardDiff
 import ForwardDiff
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str, latexstring
+using LIBSVM: svmtrain, svmpredict, Kernel
 using LinearAlgebra: svd, det
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
-using Optim: optimize, LBFGS, minimizer
+#src using Optim: optimize, LBFGS, minimizer
 using Plots: default, gui, savefig, RGB, cgrad, twinx
 using Plots: plot, plot!, scatter!, histogram!
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
- tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16,
+ colorbar_tickfontsize = 6, colorbar_titlefontsize = 14)
 
 # The following line is helpful when running this file as a script;
 # this way it will prompt user to hit a key after each figure is displayed.
@@ -67,9 +70,8 @@ and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
 if !@isdefined(data) # || true
     if !@isdefined(digitn)
-        digitn = [1,7]
+        digitn = [1,5]
     end
-#src digitn = [4,9]
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
     dataset = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
@@ -89,7 +91,7 @@ pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
 
 #
 digit_str = join(digitn); # string for file names
-## savefig(pd, "lr$digit_str-digit.pdf")
+## savefig(pd, "svm$digit_str-digit.pdf")
 
 # Partition data into train / validate / test
 ntrain = 200
@@ -109,7 +111,7 @@ dtest1 = data[:,:,tmp[itest1],:];
 dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
 pm = jim(dmean; title="Mean image")
 
-## savefig(pm, "lr$digit_str-mean.pdf")
+## savefig(pm, "svm$digit_str-mean.pdf")
 
 
 #=
@@ -120,7 +122,6 @@ X = reshape(dtrain .- dmean, nx*ny, :) # unfold
 if !@isdefined(K)
     K = 2
 end
-#src K = 7 # for digits 4,9
 U = svd(X).U[:,1:K];
 
 # Show basis vectors
@@ -128,7 +129,7 @@ tmp = reshape(U, nx, ny, K)
 pu = jim(tmp; nrow=1, title="Basis functions, K=$K", color = :bwr,
     size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
 
-## savefig(pu, "lr$digit_str-basis-$K.pdf")
+## savefig(pu, "svm$digit_str-basis-$K.pdf")
 
 
 #=
@@ -154,124 +155,43 @@ petr = plot(; title = "Train data", args...)
 pete = plot(; title = "Test data", args...)
 
 colors = (:blue, :red)
-for id in 1:ndigit
-    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label="$(digitn[id])",
-      color = colors[id])
-    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label="$(digitn[id])",
-      color = colors[id])
+function add_points!(p, X::AbstractArray{<:Number,3}; colors::Tuple = colors)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id];
+            color = colors[id], label="$(digitn[id])")
+    end
 end
+add_points!(petr, Xtrain)
+add_points!(pete, Xtest1)
 pp = plot(petr, pete; size = (950, 500))
 
 #
 prompt()
-## savefig(pp, "lr$digit_str-embed.pdf")
-
-
-
-#=
-## Logistic classifier design
-First set up the ERM cost function
-(regularized negative log-likelihood)
-using the {0,1} label formulation.
-=#
-
-# data matrices should be d × nₖ
-function model_setup(data0::AbstractMatrix, data1::AbstractMatrix, reg::Real)
-    n0, n1 = size(data0,2), size(data1,2)
-    n = n0 + n1 # total number of training samples
-    data0_bar = [ones(1, n0); data0]
-    data1_bar = [ones(1, n1); data1]
-    nl_sigma1(x) = log(1 + exp(-x)) # negative of log of σ
-    nl_sigma0(x) = log(1 + exp(+x)) # negative of log of 1 - σ
-    cost(θ) = (1/n) * (
-        sum(nl_sigma0, θ' * data0_bar) +
-        sum(nl_sigma1, θ' * data1_bar)) + reg/2 * sum(abs2, θ)
-    return cost
-end;
-
-# No regularization for now because low dimensional space:
-erm_cost = model_setup(Xtrain[:,:,1], Xtrain[:,:,2], 0);
+## savefig(pp, "svm$digit_str-embed.pdf")
 
 
 #=
-## Explore cost function
-Make 2D plot for ``θ = [0, w_1, w_2]``
+## SVM classifier design
 =#
-ws = range(-0, 3, 31)
-cost2 = [erm_cost([0; w1; w2; zeros(K-2)]) for w1 in ws, w2 in ws]
-pc = jim(ws, ws, cost2; title = "J(θ)",
- xlabel = L"w_1", ylabel = L"w_2", color = :viridis, yflip=:false)
-tmp = argmin(cost2)
-scatter!(pc, [ws[tmp[1]]], [ws[tmp[2]]], color = :white) # show minimizer
 
-#
-prompt()
+kernel = Kernel.Linear; klabel = "Linear"; kernel_str = "linear"
+kernel = Kernel.RadialBasis; klabel = "RadialBasis"; kernel_str = "rbf"
+model = svmtrain(reshape(Xtrain, K, :), ytrain; kernel);
 
+# Classifier helper
+#src todo: [1] ?
+svm_discriminant(x::AbstractVector) = svmpredict(model, reshape(x, :, 1))[2][1];
+#src svm_discriminant(zeros(K)) # test
 
-#=
-## Minimize via LBFGS quasi-Newton (QN) method
-The "L" is for limited memory
-which is unimportant for this d=2 setting,
-but is useful when applying QN
-to the original data.
-=#
-θ0 = zeros(K+1)
-opt = optimize(erm_cost, θ0, LBFGS(); autodiff = AutoForwardDiff())
-θhat = minimizer(opt)
-
-
-# Logistic regression discriminant function
-function lr_discriminant(x::AbstractVector; θ::Vector = θhat)
-    return θhat' * [1; x]
-end;
-
-# Logistic regression classifier that returns digit labels (not 0,1)
-function lr_classify1(x::AbstractVector; θ::Vector = θhat)
-    return lr_discriminant(x; θ) ≥ 0 ? digitn[2] : digitn[1] # labels!
-end;
-
-#src lr_classify1([0,0]) # test
-
-
-#=
-## Plot decision boundary
-(Only makes sense for K=2.)
-=#
-α = 0.2
-color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
-x1_range = range(-6, 6, 221)
-x2_range = range(-6, 6, 223)
-sigma(x) = 1 / (1 + exp(-x))
-function lr_plot(train_error::Real = NaN, test_error::Real = NaN;
-    classifier::Function = lr_classify1,
-    title::AbstractString =
-        "L.R. train error=$train_error %, test error = $test_error %",
-    θ::Vector = θhat,
-)
-#src tmp = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
-    tmp = [lr_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
-    tmp = sigma.(tmp)
-
-    p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
-        clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
-        args...)
-    for id in 1:ndigit
-        scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
-            color = colors[id],
-            label = "$(digitn[id])",
-        )
-    end
-    boundary = (-θ[1] .- θ[2] * x1_range) / θ[3]
-    plot!(p, x1_range, boundary, color = :magenta) # decision boundary
-    return p
-end;
+svm_classify1(x::AbstractVector) = only(svmpredict(model, reshape(x, :, 1))[1]);
+#src svm_classify1(zeros(K)) # test
 
 
 #=
 ## Classification errors
 for train / validate / test
 =#
-function errors(data, label; classifier::Function = lr_classify1)
+function errors(data, label; classifier::Function = svm_classify1)
     data = reshape(data, K, :) # (d, n)
     err = count(classifier.(eachcol(data)) .!= label) / size(data, 2)
     return round(100 * err; sigdigits = 3)
@@ -283,29 +203,50 @@ err1 = [train_error valid_error test1_error]
 
 
 #=
-## Plot data and decision regions:
+## Plot data and decision regions
+(Only makes sense for K=2.)
 =#
-p0 = lr_plot(train_error, test1_error)
+α = 0.4
+color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
+x1_range = range(-6, 6, 221)
+x2_range = range(-6, 6, 223)
+function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
+    classifier::Function = svm_classify1,
+    title::AbstractString =
+        "L.R. train error=$train_error %, test error = $test_error %",
+)
+    tmp = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+ tmp = [-svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+
+    p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
+#src    clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
+#src    clim = tuple(digitn...), colorbar_ticks = digitn,
+        colorbar_title = L"⟨w,Φ(x)⟩+b",
+        annotate = (0, 5, "kernel = $kernel", :white),
+        args...)
+    add_points!(p, Xtrain)
+    return p
+end;
+
+p0 = svm_plot(train_error, test1_error)
 
 #
 prompt()
-## savefig(p0, "lr$digit_str-v1.pdf")
+## savefig(p0, "svm$digit_str-$kernel_str-v1.pdf")
 
 
 #=
 ## Histograms of discriminant values
 =#
-ph = plot(xlabel = L"⟨w,x⟩+b", ylabel = "count",
-    title = "Test data discriminants, K=$K")
+ph = plot(xlabel = L"⟨w,Φ(x)⟩+b", ylabel = "count",
+    title = "Test data discriminants, K=$K kernel=$kernel")
 discs = Vector{Any}(undef, ndigit)
 for id in 1:ndigit
-    discs[id] = map(lr_discriminant, eachcol(Xtest1[:,:,id]))
+    discs[id] = map(svm_discriminant, eachcol(Xtest1[:,:,id]))
     histogram!(ph, discs[id], bins = 80,
         color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
         label = "$(digitn[id])")
 end
-plot!(twinx(), sigma; color = :black, linewidth = 2,
- yaxis = ("P(Y=$(digitn[2]); x)", (0,1.02), 0:0.5:1))
 ph
 
-## savefig(ph, "lr$digit_str-ph-$K.pdf")
+## savefig(ph, "svm$digit_str-$kernel_str-ph-$K.pdf")
