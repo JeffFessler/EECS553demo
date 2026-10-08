@@ -260,8 +260,6 @@ scatter!(p0, sv[1,:], sv[2,:], color = :white, marker = :x, alpha = 0.4,
 prompt()
 ## savefig(p0, "svm$digit_str-$kernel_str-v1.pdf")
 
-gui(); throw()
-
 
 #=
 ## Histograms of discriminant values
