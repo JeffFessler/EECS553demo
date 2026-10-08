@@ -49,7 +49,7 @@ using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 #src using Optim: optimize, LBFGS, minimizer
 using Plots: default, gui, savefig, RGB, cgrad, twinx
-using Plots: plot, plot!, scatter!, histogram!
+using Plots: plot, plot!, scatter!, histogram!, contour!
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
@@ -178,9 +178,17 @@ kernel = Kernel.Linear; klabel = "Linear"; kernel_str = "linear"
 kernel = Kernel.RadialBasis; klabel = "RadialBasis"; kernel_str = "rbf"
 model = svmtrain(reshape(Xtrain, K, :), ytrain; kernel);
 
+# Support vectors
+n_sv = length(model.SVs.indices)
+@show n_sv length(ytrain)
+sv = reshape(Xtrain, K, :)[:,model.SVs.indices]
+w = sv * model.coefs
+b = model.rho
+
 # Classifier helper
 #src todo: [1] ?
-svm_discriminant(x::AbstractVector) = svmpredict(model, reshape(x, :, 1))[2][1];
+svm_discriminant(x::AbstractVector) = kernel === Kernel.Linear ?
+    w'x + b : svmpredict(model, reshape(x, :, 1))[2][1] + 0model.rho[1];
 #src svm_discriminant(zeros(K)) # test
 
 svm_classify1(x::AbstractVector) = only(svmpredict(model, reshape(x, :, 1))[1]);
@@ -206,7 +214,7 @@ err1 = [train_error valid_error test1_error]
 ## Plot data and decision regions
 (Only makes sense for K=2.)
 =#
-α = 0.4
+α = 0.8
 color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
 x1_range = range(-6, 6, 221)
 x2_range = range(-6, 6, 223)
@@ -215,24 +223,34 @@ function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
     title::AbstractString =
         "L.R. train error=$train_error %, test error = $test_error %",
 )
-    tmp = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
- tmp = [-svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+    tmpc = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+    tmpd = [-svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
 
-    p = jim(x1_range, x2_range, tmp; color, title, prompt = false,
+    p = jim(x1_range, x2_range, tmpd; color, title, prompt = false,
 #src    clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
 #src    clim = tuple(digitn...), colorbar_ticks = digitn,
         colorbar_title = L"⟨w,Φ(x)⟩+b",
         annotate = (0, 5, "kernel = $kernel", :white),
         args...)
+
+    ## Add decision boundary
+    contour!(p, x1_range, x2_range, tmpc'; color = :magenta, colorbar = :none)
     add_points!(p, Xtrain)
     return p
 end;
 
-p0 = svm_plot(train_error, test1_error)
+p0 = svm_plot(train_error, test1_error);
+
+# Mark support vectors
+scatter!(p0, sv[1,:], sv[2,:], color = :white, marker = :x, alpha = 0.4,
+    annotate = (-3, -5, "$n_sv / $(length(ytrain)) SVs", :yellow),
+)
 
 #
 prompt()
 ## savefig(p0, "svm$digit_str-$kernel_str-v1.pdf")
+
+gui(); throw()
 
 
 #=
