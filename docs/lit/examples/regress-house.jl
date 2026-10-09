@@ -69,13 +69,15 @@ if !@isdefined(feature_names) # load data just once
     Xtest = read_npy("test_features.npy")
     ntrain = length(ytrain)
     ntest = length(ytest)
-    @show size(Xtrain) size(Xtest)
 
     ## read_npy can't handle strings so use readlines from .txt file
     url = url_base * "feature_names.txt"
     feature_names = readlines(download(url))
 end
+[size(Xtrain) size(Xtest) first(feature_names) last(feature_names)]
 
+
+#
 d = size(Xtrain, 1)
 μtrain = mean(Xtrain, dims=2)[:,1] # feature mean
 σtrain = std(Xtrain, dims=2)[:,1] # feature std dev
@@ -86,7 +88,8 @@ fit_l2(λ) = (Xbar*Xbar' + λ * Diagonal([0; ones(d)])) \ (Xbar * ytrain)
 
 λ_l2 = 0e3
 theta_l2 = fit_l2(λ_l2) # regularized LS fit
-predict_train = Xbar' * theta_l2
+predict_train = Xbar' * theta_l2;
+
 
 #=
 ## Plot predicted vs true price
