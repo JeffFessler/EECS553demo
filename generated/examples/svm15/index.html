@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>SVM demo · EECS553demo</title><meta name="title" content="SVM demo · EECS553demo"/><meta property="og:title" content="SVM demo · EECS553demo"/><meta property="twitter:title" content="SVM demo · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/svm15/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/svm15/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/svm15/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-house/">Linear regression of house prices</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li class="is-active"><a class="tocitem" href>SVM demo</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Visualize-embedded-data"><span>Visualize embedded data</span></a></li><li><a class="tocitem" href="#SVM-classifier-design"><span>SVM classifier design</span></a></li><li><a class="tocitem" href="#Classification-errors"><span>Classification errors</span></a></li><li><a class="tocitem" href="#Plot-data-and-decision-regions"><span>Plot data and decision regions</span></a></li><li><a class="tocitem" href="#Histograms-of-discriminant-values"><span>Histograms of discriminant values</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>SVM demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>SVM demo</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/svm15.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="svm15"><a class="docs-heading-anchor" href="#svm15">SVM demo</a><a id="svm15-1"></a><a class="docs-heading-anchor-permalink" href="#svm15" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Support_vector_machine">SVM classification</a> with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/svm15.jl"><code>svm15.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/svm15.ipynb"><code>svm15.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/svm15.ipynb"><code>svm15.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;ADTypes&quot;
+        &quot;ForwardDiff&quot;
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LIBSVM&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;Optim&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">import ForwardDiff
+using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LIBSVM: svmtrain, svmpredict, Kernel
+using LinearAlgebra: svd, det
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using Plots: default, gui, savefig, RGB, cgrad, twinx
+using Plots: plot, plot!, scatter!, histogram!, contour!
+using Random: randperm, seed!
+using Statistics: mean
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16,
+ colorbar_tickfontsize = 6, colorbar_titlefontsize = 14)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data) # || true
+    if !@isdefined(digitn)
+        digitn = [1,5]
+    end
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # function to extract the 1st `nrep` examples of digit n:
+    data = n -&gt; dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
+    data = cat(dims=4, data.(digitn)...)
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data)
+    data = data[:,2:ny,:,:] # make images non-square to force debug
+    ny = size(data,2)
+    size(data) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 2)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)</code></pre><img src="de12a559.svg" alt="Example block output"/><pre><code class="language-julia hljs">digit_str = join(digitn); # string for file names
+# savefig(pd, &quot;svm$digit_str-digit.pdf&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;15&quot;</code></pre><p>Partition data into train / validate / test</p><pre><code class="language-julia hljs">ntrain = 200
+nvalid = 100
+ntest1 = 600
+seed!(0)
+tmp = randperm(nrep)
+itrain = (1:ntrain)
+ivalid = (1:nvalid) .+ ntrain
+itest1 = (1:ntest1) .+ (ntrain + nvalid)
+dtrain = data[:,:,tmp[itrain],:]
+dvalid = data[:,:,tmp[ivalid],:]
+dtest1 = data[:,:,tmp[itest1],:];</code></pre><p>Sample mean of training images:</p><pre><code class="language-julia hljs">dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
+pm = jim(dmean; title=&quot;Mean image&quot;)
+
+# savefig(pm, &quot;svm$digit_str-mean.pdf&quot;)</code></pre><img src="79532acf.svg" alt="Example block output"/><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><p>Use two components for easy visualization</p><pre><code class="language-julia hljs">X = reshape(dtrain .- dmean, nx*ny, :) # unfold
+if !@isdefined(K)
+    K = 2
+end
+U = svd(X).U[:,1:K];</code></pre><p>Show basis vectors</p><pre><code class="language-julia hljs">tmp = reshape(U, nx, ny, K)
+pu = jim(tmp; nrow=1, title=&quot;Basis functions, K=$K&quot;, color = :bwr,
+    size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
+
+# savefig(pu, &quot;svm$digit_str-basis-$K.pdf&quot;)</code></pre><img src="d4047f96.svg" alt="Example block output"/><h2 id="Visualize-embedded-data"><a class="docs-heading-anchor" href="#Visualize-embedded-data">Visualize embedded data</a><a id="Visualize-embedded-data-1"></a><a class="docs-heading-anchor-permalink" href="#Visualize-embedded-data" title="Permalink"></a></h2><pre><code class="language-julia hljs">embed(data, n) = reshape(U&#39; * reshape(data .- dmean, nx*ny, :), K, n, :)
+Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
+Xvalid = embed(dvalid, nvalid)
+Xtest1 = embed(dtest1, ntest1)
+labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
+ytrain = labeler(ntrain)
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1)
+
+args = (;
+ xaxis = (L&quot;x_1&quot;, (-1,1) .* 6, -4:2:4),
+ yaxis = (L&quot;x_2&quot;, (-1,1) .* 6, -4:2:4),
+ aspect_ratio = 1,
+ size = (550, 500),
+)
+
+petr = plot(; title = &quot;Train data&quot;, args...)
+pete = plot(; title = &quot;Test data&quot;, args...)
+
+colors = (:blue, :red)
+function add_points!(p, X::AbstractArray{&lt;:Number,3}; colors::Tuple = colors)
+    for id in 1:ndigit
+        scatter!(p, X[1,:,id], X[2,:,id];
+            color = colors[id], label=&quot;$(digitn[id])&quot;)
+    end
+end
+add_points!(petr, Xtrain)
+add_points!(pete, Xtest1)
+pp = plot(petr, pete; size = (950, 500))</code></pre><img src="4f558bc4.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+# savefig(pp, &quot;svm$digit_str-embed.pdf&quot;)</code></pre><h2 id="SVM-classifier-design"><a class="docs-heading-anchor" href="#SVM-classifier-design">SVM classifier design</a><a id="SVM-classifier-design-1"></a><a class="docs-heading-anchor-permalink" href="#SVM-classifier-design" title="Permalink"></a></h2><pre><code class="language-julia hljs">kernel = Kernel.Linear; klabel = &quot;Linear&quot;; kernel_str = &quot;linear&quot;
+kernel = Kernel.RadialBasis; klabel = &quot;RadialBasis&quot;; kernel_str = &quot;rbf&quot;
+topm1(y) = y == digitn[1] ? 1 : -1
+model = svmtrain(reshape(Xtrain, K, :), topm1.(ytrain); kernel);</code></pre><p>Support vectors</p><pre><code class="language-julia hljs">n_sv = length(model.SVs.indices)
+sv = reshape(Xtrain, K, :)[:,model.SVs.indices]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×59 Matrix{Float32}:
+ -0.326021  -0.980634  -2.29713   0.885847  …   0.229543   2.80986   3.34792
+ -1.62607   -1.78205   -0.22774  -2.8352       -1.52582   -0.411048  1.16502</code></pre><p>Classifier helper</p><pre><code class="language-julia hljs">    #src w&#39;x + b : svmpredict(model, reshape(x, :, 1))[2][1] + 0model.rho[1];
+svm_discriminant(x::AbstractVector) =
+    svmpredict(model, reshape(x, :, 1))[2][1] + 0model.rho[1];
+
+todigit(y) = y == 1 ? digitn[1] : digitn[2]
+svm_classify1(x::AbstractVector) =
+    todigit(only(svmpredict(model, reshape(x, :, 1))[1]));</code></pre><h2 id="Classification-errors"><a class="docs-heading-anchor" href="#Classification-errors">Classification errors</a><a id="Classification-errors-1"></a><a class="docs-heading-anchor-permalink" href="#Classification-errors" title="Permalink"></a></h2><p>for train / validate / test</p><pre><code class="language-julia hljs">function errors(data, label; classifier::Function = svm_classify1)
+    data = reshape(data, K, :) # (d, n)
+    err = count(classifier.(eachcol(data)) .!= label) / size(data, 2)
+    return round(100 * err; sigdigits = 3)
+end
+train_error = errors(Xtrain, ytrain)
+valid_error = errors(Xvalid, yvalid)
+test1_error = errors(Xtest1, ytest1)
+err1 = [train_error valid_error test1_error]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×3 Matrix{Float64}:
+ 2.0  2.5  1.92</code></pre><h2 id="Plot-data-and-decision-regions"><a class="docs-heading-anchor" href="#Plot-data-and-decision-regions">Plot data and decision regions</a><a id="Plot-data-and-decision-regions-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-data-and-decision-regions" title="Permalink"></a></h2><p>(Only makes sense for K=2.)</p><pre><code class="language-julia hljs">α = 0.6
+color = reverse(cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])) # trick!
+x1_range = range(-6, 6, 221)
+x2_range = range(-6, 6, 223)
+function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
+    classifier::Function = svm_classify1,
+    title::AbstractString =
+        &quot;L.R. train error=$train_error %, test error = $test_error %&quot;,
+)
+    tmpc = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+    tmpd = [svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+@show size(tmpd) typeof(tmpd)
+
+    p = jim(x1_range, x2_range, tmpd; color, title, prompt = false,
+        colorbar_title = L&quot;⟨w,Φ(x)⟩+b&quot;,
+        annotate = (0, 5, &quot;kernel = $kernel&quot;, :white),
+        args...)
+    plot!(p, colorbar = true)
+
+    # Add decision boundary
+    contour!(p, x1_range, x2_range, tmpc&#39;; color = :magenta)#, colorbar = :none)
+    if kernel == Kernel.Linear
+        contour!(p, x1_range, x2_range, abs.(tmpd)&#39;;
+            color = :green, levels=[1e-3*maximum(tmpd)]) #, colorbar = :none
+    end
+    add_points!(p, Xtrain)
+    return p
+end;
+
+p0 = svm_plot(train_error, test1_error);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">size(tmpd) = (221, 223)
+typeof(tmpd) = Matrix{Float64}</code></pre><p>Mark support vectors</p><pre><code class="language-julia hljs">scatter!(p0, sv[1,:], sv[2,:], color = :white, marker = :x, alpha = 0.4,
+    annotate = (-3, -5, &quot;$n_sv / $(length(ytrain)) SVs&quot;, :yellow),
+)</code></pre><img src="ea299331.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+# savefig(p0, &quot;svm$digit_str-$kernel_str-v1.pdf&quot;)</code></pre><h2 id="Histograms-of-discriminant-values"><a class="docs-heading-anchor" href="#Histograms-of-discriminant-values">Histograms of discriminant values</a><a id="Histograms-of-discriminant-values-1"></a><a class="docs-heading-anchor-permalink" href="#Histograms-of-discriminant-values" title="Permalink"></a></h2><pre><code class="language-julia hljs">ph = plot(xlabel = L&quot;⟨w,Φ(x)⟩+b&quot;, ylabel = &quot;count&quot;,
+    title = &quot;Test data discriminants, K=$K kernel=$kernel&quot;)
+discs = Vector{Any}(undef, ndigit)
+for id in 1:ndigit
+    discs[id] = map(svm_discriminant, eachcol(Xtest1[:,:,id]))
+    histogram!(ph, discs[id], bins = 80,
+        color = colors[id], linealpha = 0, linecolor = nothing, alpha = 0.5,
+        label = &quot;$(digitn[id])&quot;)
+end
+ph
+
+# savefig(ph, &quot;svm$digit_str-$kernel_str-ph-$K.pdf&quot;)</code></pre><img src="e4062c9c.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../regress-mmse/">« MMSE regression and SAT scores</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Friday 9 October 2026 04:00">Friday 9 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

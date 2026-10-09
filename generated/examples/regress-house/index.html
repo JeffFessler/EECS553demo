@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Linear regression of house prices · EECS553demo</title><meta name="title" content="Linear regression of house prices · EECS553demo"/><meta property="og:title" content="Linear regression of house prices · EECS553demo"/><meta property="twitter:title" content="Linear regression of house prices · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/regress-house/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/regress-house/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/regress-house/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li class="is-active"><a class="tocitem" href>Linear regression of house prices</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Data"><span>Data</span></a></li><li><a class="tocitem" href="#Plot-predicted-vs-true-price"><span>Plot predicted vs true price</span></a></li><li><a class="tocitem" href="#Examine-prediction-RMS-error-vs-λ"><span>Examine prediction RMS error vs λ</span></a></li></ul></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li><a class="tocitem" href="../svm15/">SVM demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Linear regression of house prices</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Linear regression of house prices</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/regress-house.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="regress-house"><a class="docs-heading-anchor" href="#regress-house">Linear regression of house prices</a><a id="regress-house-1"></a><a class="docs-heading-anchor-permalink" href="#regress-house" title="Permalink"></a></h1><p>Illustrate linear regression using Julia.</p><p>The house price data used here originate from <a href="https://jse.amstat.org/v19n3/decock/DataDocumentation.txt">ASA</a> and was copied to <a href="https://github.com/JeffFessler/553data/tree/main/ames-housing">gitbub</a> for convenience.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/regress-house.jl"><code>regress-house.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/regress-house.ipynb"><code>regress-house.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/regress-house.ipynb"><code>regress-house.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;Downloads&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;NPZ&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using Downloads: download
+using LinearAlgebra: Diagonal
+using MIRTjim: prompt
+using NPZ: npzread
+using Statistics: mean, std
+using Plots: default, gui, plot, plot!, scatter!, savefig
+default(); default(label=&quot;&quot;, markerstrokecolor=:auto, widen=true, linewidth=2,
+ markersize = 6, tickfontsize = 14, labelfontsize = 16, legendfontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() || prompt(:draw);</code></pre><h2 id="Data"><a class="docs-heading-anchor" href="#Data">Data</a><a id="Data-1"></a><a class="docs-heading-anchor-permalink" href="#Data" title="Permalink"></a></h2><p>Read data from .npy files in companion github repo</p><pre><code class="language-julia hljs">url_base = &quot;https://github.com/JeffFessler/553data/raw/refs/heads/main/ames-housing/&quot;
+function read_npy(filename::String)
+    url = url_base * filename
+    tmp = download(url) # download from url
+    return npzread(tmp) # read data from the buffer
+end
+
+if !@isdefined(feature_names) # load data just once
+    ytrain = read_npy(&quot;train_labels.npy&quot;)
+    Xtrain = read_npy(&quot;train_features.npy&quot;)
+    ytest = read_npy(&quot;test_labels.npy&quot;)
+    Xtest = read_npy(&quot;test_features.npy&quot;)
+    ntrain = length(ytrain)
+    ntest = length(ytest)
+
+    # read_npy can&#39;t handle strings so use readlines from .txt file
+    url = url_base * &quot;feature_names.txt&quot;
+    feature_names = readlines(download(url))
+end
+[size(Xtrain) size(Xtest) first(feature_names) last(feature_names)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×4 Matrix{Any}:
+ (58, 2000)  (58, 925)  &quot;Lot.Frontage&quot;  &quot;Total.Porch.SF&quot;</code></pre><pre><code class="language-julia hljs">d = size(Xtrain, 1)
+μtrain = mean(Xtrain, dims=2)[:,1] # feature mean
+σtrain = std(Xtrain, dims=2)[:,1] # feature std dev
+Xbar = [ones(1, ntrain); (Xtrain .- μtrain) ./ σtrain]; # sphere data</code></pre><p>Tikhonov regularization of weights &quot;w&quot; is a 1-liner:</p><pre><code class="language-julia hljs">fit_l2(λ) = (Xbar*Xbar&#39; + λ * Diagonal([0; ones(d)])) \ (Xbar * ytrain)
+
+λ_l2 = 0e3
+theta_l2 = fit_l2(λ_l2) # regularized LS fit
+predict_train = Xbar&#39; * theta_l2;</code></pre><h2 id="Plot-predicted-vs-true-price"><a class="docs-heading-anchor" href="#Plot-predicted-vs-true-price">Plot predicted vs true price</a><a id="Plot-predicted-vs-true-price-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-predicted-vs-true-price" title="Permalink"></a></h2><p>for both training and test data</p><pre><code class="language-julia hljs">p2 = plot([0, 600], [0, 600]; color = :black, label = &quot;Ideal&quot;,
+   size = (650, 600), aspect_ratio = 1)
+
+scatter!(p2, ytrain, predict_train;
+   label = &quot;Train: λ=$λ_l2&quot;, color = :blue,
+   xaxis = (&quot;True price (K\$)&quot;, ),
+   yaxis = (&quot;Predicted price (K\$)&quot;, ),
+)
+
+Xbar_test = [ones(1, ntest); (Xtest .- μtrain) ./ σtrain]
+predict = Xbar_test&#39; * theta_l2
+
+scatter!(p2, ytest, predict; aspect_ratio = 1,
+   label = &quot;Test: λ=$λ_l2&quot;, color = :red, alpha = 0.5,
+   xaxis = (&quot;True price (K\$)&quot;, ),
+   yaxis = (&quot;Predicted price (K\$)&quot;, ),
+)</code></pre><img src="ba8fbaef.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+# savefig(pd, &quot;regress-house-predict-l2.pdf&quot;)</code></pre><h2 id="Examine-prediction-RMS-error-vs-λ"><a class="docs-heading-anchor" href="#Examine-prediction-RMS-error-vs-λ">Examine prediction RMS error vs λ</a><a id="Examine-prediction-RMS-error-vs-λ-1"></a><a class="docs-heading-anchor-permalink" href="#Examine-prediction-RMS-error-vs-λ" title="Permalink"></a></h2><p>for both training and test data</p><pre><code class="language-julia hljs">λs = range(0, 200, 51)
+rmse_fun(λ, Xb, y) = sqrt(mean(abs2, Xb&#39; * fit_l2(λ) - y))
+rmse_train_fun(λ) = rmse_fun(λ, Xbar, ytrain)
+rmse_test_fun(λ) = rmse_fun(λ, Xbar_test, ytest)
+rmse_train = rmse_train_fun.(λs)
+rmse_test = rmse_test_fun.(λs)
+ibest = argmin(rmse_test) # index of best λ for test data
+
+pe = plot(; legend = :right,
+    title = &quot;Tikhonov regularization of w&quot;,
+    xaxis = (&quot;λ&quot;, ),
+    yaxis = (&quot;Price RMSE (K\$)&quot;, (24, 28), ),
+)
+plot!(pe, λs, rmse_test, label = &quot;Test; best λ = $(λs[ibest])&quot;, color = :red)
+plot!(pe, λs, rmse_train, label = &quot;Train&quot;, color = :blue)
+scatter!(pe, [0], [rmse_train[findall(==(0), λs)]],
+    marker = :circle, color = :blue)
+scatter!(pe, [λs[ibest]], [rmse_test[ibest]],
+    marker = :circle, color = :red)
+
+# savefig(pd, &quot;regress-house-rmse-l2.pdf&quot;)</code></pre><img src="1eff4a16.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../qda17/">« QDA demo</a><a class="docs-footer-nextpage" href="../regress-mmse/">MMSE regression and SAT scores »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Friday 9 October 2026 04:00">Friday 9 October 2026</span>. Using Julia version 1.13.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
