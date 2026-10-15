@@ -222,13 +222,13 @@ to_vec(θt) = reduce(vcat, map(vec, θt)); # tuple to vector
 
 # Inverse of the `to_vec` function:
 function to_tuple(flat_vec::AbstractVector, template) # vector to tuple
-    # Wrap flat vector to track current index statefully
+    ## Wrap flat vector to track current index statefully
     items = Iterators.Stateful(flat_vec)
    
-    # Map over the template to extract the exact number of elements and reshape
+    ## Map over the template to extract the exact number of elements and reshape
     return map(template) do orig_arr
         len = length(orig_arr)
-        # Take exactly the elements needed and reshape to original dimensions
+        ## Take exactly the elements needed and reshape to original dimensions
         reshape(collect(Iterators.take(items, len)), size(orig_arr))
     end
 end;
@@ -321,7 +321,7 @@ err1 = [train_error valid_error test1_error]
 ## Plot multinomial probabilities
 (Only makes sense for K=2.)
 =#
-α = 0.5
+α = 0.2
 rgb(class::Int) =
     class == digitn[1] ? RGB(((1-α) .+ α*[1,0,0])...) :
     class == digitn[2] ? RGB(((1-α) .+ α*[0,1,0])...) :
