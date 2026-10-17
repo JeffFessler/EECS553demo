@@ -90,28 +90,26 @@ fit_l2(λ) = (Xbar*Xbar' + λ * Diagonal([0; ones(d)])) \ (Xbar * ytrain)
 theta_l2 = fit_l2(λ_l2) # regularized LS fit
 predict_train = Xbar' * theta_l2;
 
+Xbar_test = [ones(1, ntest); (Xtest .- μtrain) ./ σtrain]
+predict_test = Xbar_test' * theta_l2
+
+rmse(yh, y, sigdigits=6) = round(sqrt(mean(abs2, yh - y)); sigdigits);
 
 #=
 ## Plot predicted vs true price
 for both training and test data
 =#
 p2 = plot([0, 600], [0, 600]; color = :black, label = "Ideal",
-   size = (650, 600), aspect_ratio = 1)
-
-scatter!(p2, ytrain, predict_train;
-   label = "Train: λ=$λ_l2", color = :blue,
    xaxis = ("True price (K\$)", ),
    yaxis = ("Predicted price (K\$)", ),
+   size = (650, 600), aspect_ratio = 1,
 )
 
-Xbar_test = [ones(1, ntest); (Xtest .- μtrain) ./ σtrain]
-predict = Xbar_test' * theta_l2
+scatter!(p2, ytrain, predict_train; color = :blue,
+   label = "Train: λ=$λ_l2 RMSE=$(rmse(predict_train, ytrain, 3)) K\$",)
 
-scatter!(p2, ytest, predict; aspect_ratio = 1,
-   label = "Test: λ=$λ_l2", color = :red, alpha = 0.5,
-   xaxis = ("True price (K\$)", ),
-   yaxis = ("Predicted price (K\$)", ),
-)
+scatter!(p2, ytest, predict_test; color = :red, alpha = 0.5,
+   label = "Test: λ=$λ_l2 RMSE=$(rmse(predict_test, ytest, 3)) K\$",)
 
 #
 prompt()
@@ -124,7 +122,7 @@ for both training and test data
 =#
 
 λs = range(0, 200, 51)
-rmse_fun(λ, Xb, y) = sqrt(mean(abs2, Xb' * fit_l2(λ) - y))
+rmse_fun(λ, Xb, y) = rmse(Xb' * fit_l2(λ), y)
 rmse_train_fun(λ) = rmse_fun(λ, Xbar, ytrain)
 rmse_test_fun(λ) = rmse_fun(λ, Xbar_test, ytest)
 rmse_train = rmse_train_fun.(λs)
