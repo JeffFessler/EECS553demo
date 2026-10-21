@@ -37,7 +37,7 @@ end
 
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str, latexstring
-using LinearAlgebra: svd
+using LinearAlgebra: svd, norm
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using Plots: default, gui, savefig, RGB, cgrad, twinx
@@ -58,30 +58,34 @@ Read the MNIST data for some handwritten digits.
 This code will automatically download the data from web if needed
 and put it in a folder like: `~/.julia/datadeps/MNIST/`.
 =#
-if !@isdefined(data)
+if !@isdefined(data_test1)
     digitn = 0:9
-    digit_str = join(digitn); # string for file names
+#src digit_str = join(digitn); # string for file names
+    digit_str = "$digitn"
     isinteractive() || (ENV["DATADEPS_ALWAYS_ACCEPT"] = true) # avoid prompt
-    dataset = MNIST(Float32, :train)
+    dataset_train = MNIST(Float32, :train)
     nrep = 1000 # how many of each digit
-    ## function to extract the 1st `nrep` examples of digit n:
-    data = n -> dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
-    data = cat(dims=4, data.(digitn)...)
+    ## helper function to extract the `pick` examples of digit n from `set`:
+    fun1(n, set, pick) = set.features[:,:,findall(==(n), set.targets)[pick]]
+    fun2(set, pick) = cat(dims=4, (n -> fun1(n, set, pick)).(digitn)...)
+    data_train = fun2(dataset_train, 1:nrep)
+    data_test1 = fun2(dataset_train, nrep .+ (1:nrep))
     labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
-    nx, ny, nrep, ndigit = size(data)
-    data = data[:,2:ny,:,:] # make images non-square to force debug
-    ny = size(data,2)
-    size(data) # (nx, ny, nrep, ndigit)
+    nx, ny, nrep, ndigit = size(data_train)
+    data_train = data_train[:,2:ny,:,:] # make images non-square to force debug
+    data_test1 = data_test1[:,2:ny,:,:]
+    ny = size(data_train, 2)
+    size(data_train) # (nx, ny, nrep, ndigit)
 end
 
 # Look at some of the image data
-pd = jim(data[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
+pd = jim(data_train[:,:,1:10,:], "Data, d=$(nx*ny), N=$(nrep*ndigit)";
     colorbar = nothing, size = (600,500), tickfontsize = 6, ncol = 10)
 
 ## savefig(pd, "pca$digit_str-digit.pdf")
 
 # Sample mean of all training images:
-dmean = sum(data, dims = 3:4) / nrep / ndigit
+dmean = sum(data_train, dims = 3:4) / nrep / ndigit
 pm = jim(dmean; title="Mean image")
 
 ## savefig(pm, "pca$digit_str-mean.pdf")
@@ -92,8 +96,8 @@ n0 = count(==(0), dmean)
 #=
 ## PCA-based dimensionality reduction
 =#
-X = reshape(data .- dmean, nx*ny, :) # unfold
-U, sigma, _ = svd(X);
+X__mean = reshape(data_train .- dmean, nx*ny, :) # remove mean, unfold
+U, sigma, _ = svd(X__mean);
 
 # Show a few basis vectors
 K = 20
@@ -104,7 +108,7 @@ pu = jim(tmp; nrow=4, title="Basis functions, K=$K", color = :bwr,
 ## savefig(pu, "pca$digit_str-basis-$K.pdf")
 
 #=
-## Screen plot
+## Screen plots
 =#
 
 # non-log scale:
@@ -124,13 +128,52 @@ ps = scatter(log10.(sigma); widen = true,
 
 
 #=
-## RMSE vs K
+## NRMSE vs K
+Caution: NRMSE must account for data before subtracting the mean
 =#
 total = sum(abs2, sigma) # total variance
-rmse = sqrt.( (total .- cumsum(abs2.(sigma))) ./ total )
-i01 = findfirst(≤(0.01), rmse)
-scatter(rmse; widen = true,
+data_norm = norm(data_train)
+nrmse_train = sqrt.( (total .- cumsum(abs2.(sigma))) ) / data_norm
+i01 = findfirst(≤(0.01), nrmse_train)
+scatter(nrmse_train; widen = true,
    xaxis = (L"k", (0, 756), [0:100:400; i01; nx*ny-n0; nx*ny]),
-   yaxis = ("RMSE", (0,1), ),
-   title = "RMSE vs k for digits $digit_str",
+   yaxis = ("NRMSE", (0,1), ),
+   title = "NRMSE vs k for digits $digit_str",
 )
+
+
+#=
+## Show "worst represented" digits
+in training data
+=#
+K = i01 # get to 0.01 nrmse level
+UK = U[:,1:K]
+Xhat = vec(dmean) .+ UK * (UK' * X__mean) # project, then restore mean
+Xhat = reshape(Xhat, nx, ny, nrep, ndigit);
+
+err = Xhat - data_train
+@show norm(err) / norm(data_train) # ≈ 0.01 for K = i01
+
+# per-image errors
+err = map(norm, eachslice(err, dims=(3,4)))
+relative_err = err ./ map(norm, eachslice(data_train, dims=(3,4)))
+sqrt(mean(abs2, relative_err)) # ≈ 0.01 for K = i01
+
+# Plots
+pbad = Vector{Any}(undef, ndigit)
+for id in 1:ndigit
+    ib = argmax(err[id,:]) # worst-case
+    data_bad = data_train[:,:,ib,id]
+    pred_bad = Xhat[:,:,ib,id]
+    tmp = data_bad - pred_bad
+    @show nrmse = round(norm(tmp) / norm(data_bad), sigdigits=3) # NRMSE
+    pbad[id] = jim(
+        jim(data_bad; title="Original", clim = (0,1), colorbar_ticks = [0,1]),
+        jim(pred_bad; title="Approx, K=$K",
+            clim = (0,1), colorbar_ticks = [0,1]),
+        jim(tmp; title="NRMSE=$nrmse", color = :bwr,
+            clim = (-1,1).*0.01, colorbar_ticks = (-1:1)*0.01),
+        layout = (3,1),
+    )
+end
+plot(pbad[1:3:7]...; layout=(1,3), size=(1200, 500)) # show a few
