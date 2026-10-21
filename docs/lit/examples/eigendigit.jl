@@ -37,7 +37,7 @@ end
 
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str, latexstring
-using LinearAlgebra: svd, det
+using LinearAlgebra: svd
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using Plots: default, gui, savefig, RGB, cgrad, twinx
@@ -93,7 +93,7 @@ n0 = count(==(0), dmean)
 ## PCA-based dimensionality reduction
 =#
 X = reshape(data .- dmean, nx*ny, :) # unfold
-U, sigma, _ = svd(X)
+U, sigma, _ = svd(X);
 
 # Show a few basis vectors
 K = 20
