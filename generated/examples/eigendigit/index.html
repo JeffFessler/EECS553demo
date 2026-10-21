@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>PCA for MNIST digits · EECS553demo</title><meta name="title" content="PCA for MNIST digits · EECS553demo"/><meta property="og:title" content="PCA for MNIST digits · EECS553demo"/><meta property="twitter:title" content="PCA for MNIST digits · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/eigendigit/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/eigendigit/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/eigendigit/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li class="is-active"><a class="tocitem" href>PCA for MNIST digits</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Screen-plots"><span>Screen plots</span></a></li><li><a class="tocitem" href="#NRMSE-vs-K"><span>NRMSE vs K</span></a></li><li><a class="tocitem" href="#Show-&quot;worst-represented&quot;-digits"><span>Show &quot;worst represented&quot; digits</span></a></li></ul></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../krr/">Kernel ridge regression</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../mlp3/">Multilayer perceptron (MLP) demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-house/">Linear regression of house prices</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li><a class="tocitem" href="../svm15/">SVM demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>PCA for MNIST digits</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>PCA for MNIST digits</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/eigendigit.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="eigendigit"><a class="docs-heading-anchor" href="#eigendigit">PCA for MNIST digits</a><a id="eigendigit-1"></a><a class="docs-heading-anchor-permalink" href="#eigendigit" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Principal_component_analysis">Principal component analysis</a> with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/eigendigit.jl"><code>eigendigit.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/eigendigit.ipynb"><code>eigendigit.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/eigendigit.ipynb"><code>eigendigit.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: svd, norm
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using Plots: default, gui, savefig, RGB, cgrad, twinx
+using Plots: plot, plot!, scatter, scatter!, histogram!, contour!
+using Statistics: mean
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data_test1)
+    digitn = 0:9
+    digit_str = &quot;$digitn&quot;
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset_train = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # helper function to extract the `pick` examples of digit n from `set`:
+    fun1(n, set, pick) = set.features[:,:,findall(==(n), set.targets)[pick]]
+    fun2(set, pick) = cat(dims=4, (n -&gt; fun1(n, set, pick)).(digitn)...)
+    data_train = fun2(dataset_train, 1:nrep)
+    data_test1 = fun2(dataset_train, nrep .+ (1:nrep))
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data_train)
+    data_train = data_train[:,2:ny,:,:] # make images non-square to force debug
+    data_test1 = data_test1[:,2:ny,:,:]
+    ny = size(data_train, 2)
+    size(data_train) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 10)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data_train[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar = nothing, size = (600,500), tickfontsize = 6, ncol = 10)
+
+# savefig(pd, &quot;pca$digit_str-digit.pdf&quot;)</code></pre><img src="5d81a726.svg" alt="Example block output"/><p>Sample mean of all training images:</p><pre><code class="language-julia hljs">dmean = sum(data_train, dims = 3:4) / nrep / ndigit
+pm = jim(dmean; title=&quot;Mean image&quot;)
+
+# savefig(pm, &quot;pca$digit_str-mean.pdf&quot;)</code></pre><img src="304d4365.svg" alt="Example block output"/><p>Some pixels are always zero:</p><pre><code class="language-julia hljs">n0 = count(==(0), dmean)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">83</code></pre><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><pre><code class="language-julia hljs">X__mean = reshape(data_train .- dmean, nx*ny, :) # remove mean, unfold
+U, sigma, _ = svd(X__mean);</code></pre><p>Show a few basis vectors</p><pre><code class="language-julia hljs">K = 20
+tmp = reshape(U[:,1:K], nx, ny, K)
+pu = jim(tmp; nrow=4, title=&quot;Basis functions, K=$K&quot;, color = :bwr,
+    colorbar_ticks = [0])
+
+# savefig(pu, &quot;pca$digit_str-basis-$K.pdf&quot;)</code></pre><img src="ed3787e2.svg" alt="Example block output"/><h2 id="Screen-plots"><a class="docs-heading-anchor" href="#Screen-plots">Screen plots</a><a id="Screen-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Screen-plots" title="Permalink"></a></h2><p>non-log scale:</p><pre><code class="language-julia hljs">ps = scatter(sigma; widen = true,
+   xaxis = (&quot;k&quot;, (0, 756), [0:100:600; nx*ny-n0; nx*ny]),
+   yaxis = (L&quot;σ_k&quot;),
+   title = &quot;Screen plot for digits $digit_str&quot;,
+)</code></pre><img src="30f823de.svg" alt="Example block output"/><p>log scale:</p><pre><code class="language-julia hljs">ps = scatter(log10.(sigma); widen = true,
+   xaxis = (&quot;k&quot;, (0, 756), [0:100:600; nx*ny-n0; nx*ny]),
+   yaxis = (L&quot;σ_k&quot;),
+   title = &quot;Screen plot for digits $digit_str&quot;,
+)</code></pre><img src="b1f7e262.svg" alt="Example block output"/><h2 id="NRMSE-vs-K"><a class="docs-heading-anchor" href="#NRMSE-vs-K">NRMSE vs K</a><a id="NRMSE-vs-K-1"></a><a class="docs-heading-anchor-permalink" href="#NRMSE-vs-K" title="Permalink"></a></h2><p>Caution: NRMSE must account for data before subtracting the mean</p><pre><code class="language-julia hljs">total = sum(abs2, sigma) # total variance
+data_norm = norm(data_train)
+nrmse_train = sqrt.( (total .- cumsum(abs2.(sigma))) ) / data_norm
+i01 = findfirst(≤(0.01), nrmse_train)
+scatter(nrmse_train; widen = true,
+   xaxis = (L&quot;k&quot;, (0, 756), [0:100:400; i01; nx*ny-n0; nx*ny]),
+   yaxis = (&quot;NRMSE&quot;, (0,1), ),
+   title = &quot;NRMSE vs k for digits $digit_str&quot;,
+)</code></pre><img src="ed67c4dd.svg" alt="Example block output"/><h2 id="Show-&quot;worst-represented&quot;-digits"><a class="docs-heading-anchor" href="#Show-&quot;worst-represented&quot;-digits">Show &quot;worst represented&quot; digits</a><a id="Show-&quot;worst-represented&quot;-digits-1"></a><a class="docs-heading-anchor-permalink" href="#Show-&quot;worst-represented&quot;-digits" title="Permalink"></a></h2><p>in training data</p><pre><code class="language-julia hljs">K = i01 # get to 0.01 nrmse level
+UK = U[:,1:K]
+Xhat = vec(dmean) .+ UK * (UK&#39; * X__mean) # project, then restore mean
+Xhat = reshape(Xhat, nx, ny, nrep, ndigit);
+
+err = Xhat - data_train
+@show norm(err) / norm(data_train) # ≈ 0.01 for K = i01</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.0099318195f0</code></pre><p>per-image errors</p><pre><code class="language-julia hljs">err = map(norm, eachslice(err, dims=(3,4)))
+relative_err = err ./ map(norm, eachslice(data_train, dims=(3,4)))
+sqrt(mean(abs2, relative_err)) # ≈ 0.01 for K = i01</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0.010416267f0</code></pre><p>Plots</p><pre><code class="language-julia hljs">pbad = Vector{Any}(undef, ndigit)
+for id in 1:ndigit
+    ib = argmax(err[id,:]) # worst-case
+    data_bad = data_train[:,:,ib,id]
+    pred_bad = Xhat[:,:,ib,id]
+    tmp = data_bad - pred_bad
+    @show nrmse = round(norm(tmp) / norm(data_bad), sigdigits=3) # NRMSE
+    pbad[id] = jim(
+        jim(data_bad; title=&quot;Original&quot;, clim = (0,1), colorbar_ticks = [0,1]),
+        jim(pred_bad; title=&quot;Approx, K=$K&quot;,
+            clim = (0,1), colorbar_ticks = [0,1]),
+        jim(tmp; title=&quot;NRMSE=$nrmse&quot;, color = :bwr,
+            clim = (-1,1).*0.01, colorbar_ticks = (-1:1)*0.01),
+        layout = (3,1),
+    )
+end
+plot(pbad[1:3:7]...; layout=(1,3), size=(1200, 500)) # show a few</code></pre><img src="d01a81c6.svg" alt="Example block output"/><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../decision-boundary/">« Decision boundaries</a><a class="docs-footer-nextpage" href="../hard-margin/">Illustrate hard margin constraint sets »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 21 October 2026 18:43">Wednesday 21 October 2026</span>. Using Julia version 1.13.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
