@@ -6,6 +6,43 @@ Illustrate
 of the 1D
 [Ackley function](https://en.wikipedia.org/wiki/Ackley_function).
 in Julia.
+
+
+Example aided by GPT-6.1 Sol(Agent) 2026-10-28.
+
+It implements the Gaussian process (GP)
+and expected improvement (EI) acquisition function directly
+without calling any Bayesian optimization package.
+
+At each iteration, it displays:
+
+- the true function, observed samples, GP posterior mean,
+  and a shaded ±2-standard-deviation uncertainty band.
+- expected improvement, and a vertical line at the proposed next sample.
+
+The true function is plotted for illustration only;
+the optimizer uses only the sampled values.
+
+### A few details worth noting
+
+- Acquisition maximization is a dense grid search.
+
+This is simple and effective in 1D;
+the grid spacing determines the precision of each proposed sample.
+
+- Kernel hyperparameter fitting is optional.
+
+With only two or three observations,
+marginal-likelihood estimates can be unstable.
+Set `tune_hyperparameters=false` to use fixed parameters
+and make the posterior evolution easier to interpret.
+
+- The shaded band is pointwise GP uncertainty,
+  not a simultaneous confidence band
+  or a guarantee that the true function lies inside it.
+
+- The final frame’s vertical line indicates an additional recommendation
+  that has not yet been evaluated.
 =#
 
 #srcURL
@@ -55,43 +92,6 @@ default(); default(markersize=3, markerstrokecolor=:auto, label="",
 isinteractive() ? jim(:prompt, true) : prompt(:draw);
 
 
-#=
-Self-contained 1D example by GPT-6.1 Sol(Agent) 2026-10-28.
-It implements the Gaussian process (GP)
-and **expected improvement (EI)** acquisition function directly
-no Bayesian optimization package.
-
-At each iteration, it displays:
-
-- the true function, observed samples, GP posterior mean,
-  and a shaded ±2-standard-deviation uncertainty band.
-- expected improvement, and a vertical line at the proposed next sample.
-
-The true function is plotted for illustration only;
-the optimizer uses only the sampled values.
-
-### A few details worth noting
-
-- Acquisition maximization is a dense grid search.
-
-This is simple and effective in 1D;
-the grid spacing determines the precision of each proposed sample.
-
-- Hyperparameter fitting is optional.
-
-With only two or three observations,
-marginal-likelihood estimates can be unstable.
-Set `tune_hyperparameters=false` to use fixed parameters
-and make the posterior evolution easier to interpret.
-
-- The shaded band is pointwise GP uncertainty,
-  not a simultaneous confidence band
-  or a guarantee that the true function lies inside it.
-
-- The loop evaluates exactly `ninitial + nsteps` points.
-  The final frame’s vertical line indicates an additional recommendation
-  that has not yet been evaluated.
-=#
 
 
 # Objective: 1D Ackley function; global minimum f(0) = 0.
@@ -106,8 +106,7 @@ Gaussian process with a constant mean and Gaussian kernel:
 
 k(x, z) = σf² exp(-(x-z)² / (2ℓ²))
 =#
-kernel(x, z, ℓ, σf) =
-    σf^2 * exp(-0.5 * ((x - z) / ℓ)^2)
+kernel(x, z, ℓ, σf) = σf^2 * exp(-0.5 * ((x - z) / ℓ)^2)
 
 struct GPModel
     x::Vector{Float64}
@@ -132,8 +131,7 @@ function fit_gp(x, y; ℓ = 1.0, σf = 5.0, σn = 1e-6)
     y = Float64.(y)
     n = length(x)
 
-    # Simple plug-in estimate of the constant prior mean.
-    m = mean(y)
+    m = mean(y) # Simple plug-in estimate of the constant prior mean.
     r = y .- m
 
     K = [kernel(xi, xj, ℓ, σf) for xi in x, xj in x]
