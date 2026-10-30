@@ -26,9 +26,10 @@ if false
         "LaTeXStrings"
         "LinearAlgebra"
         "MIRTjim"
-        "MLDatasets"
         "Plots"
+        "Random"
         "Statistics"
+        "SpecialFunctions"
     ])
 end
 
@@ -265,7 +266,6 @@ function plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
         linewidth = 2,
         label = "GP mean ± 2 SD",
     )
-
 #src step == 0 && savefig(p1, "bo-$step-gp.pdf")
 
     vline!(
@@ -306,19 +306,16 @@ end
 #=
 ## Sequential Bayesian optimization demo
 =#
-
 function demo_bo(;
     seed = 2,
     ninitial = 3,
-    nsteps = 15,
+    nsteps = 14,
     bounds = (-5.0, 5.0),
     ngrid = 2001,
     ξ = 0.01,
     tune_hyperparameters = true,
     fixed_ℓ = 0.5,
     fixed_σf = 4.0,
-    pause_seconds = 0.4,
-    giffile = nothing,
 )
     @assert ninitial ≥ 2
     @assert nsteps ≥ 0
@@ -334,7 +331,6 @@ function demo_bo(;
 
     grid = collect(range(lo, hi; length = ngrid))
     truth = ackley.(grid) # Visualization only
-    anim = isnothing(giffile) ? nothing : Animation()
 
     p = Vector{Any}(undef, nsteps+1)
     for step in 0:nsteps
@@ -359,46 +355,49 @@ function demo_bo(;
         p[step+1] = plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
 #src    display(p)
 
-        if anim !== nothing
-            frame(anim, p[step+1])
-        end
-        if pause_seconds > 0
-            sleep(pause_seconds)
-        end
-
         step == nsteps && break
 
         push!(x, xnext)
         push!(y, ackley(xnext))
     end
 
-    if anim !== nothing
-        gif(anim, giffile; fps = 2)
-    end
-
-    ibest = argmin(y)
-    println(
-        "Best observed: x = $(round(x[ibest]; digits=5)), " *
-        "f(x) = $(round(y[ibest]; digits = 5))",
-    )
-
-    return (; x, y, p, anim) # todo - gif?
+    return (; x, y, p)
 end
 
 
-result = demo_bo(
-    nsteps = 14,
-    tune_hyperparameters = false,
-    fixed_ℓ = 0.5,
-    fixed_σf = 4.0,
-    giffile = "ackley_bo.gif", # Use nothing to skip saving a GIF.
-)
+#=
+## Demo with fixed kernel parameters
+=#
+result1 = demo_bo(; tune_hyperparameters = false)
+result1.p[end]
 
-result = demo_bo(
-    ninitial = 3, # Set to 2 for two initial samples.
-    nsteps = 14,
-    tune_hyperparameters = true,
-    giffile = "ackley_bo.gif", # Use nothing to skip saving a GIF.
-)
+#
+anim1 = Animation()
+for p in result1.p
+    frame(anim1, p)
+end
+gif(anim1, "ackley_bo.gif"; fps = 2)
 
-# todo: return all the plots, *then* animate
+#
+ibest = argmin(result1.y)
+"Best observed: x = $(round(result1.x[ibest]; digits=5)), " *
+ "f(x) = $(round(result1.y[ibest]; digits = 5))"
+
+
+#=
+## Demo with tuned kernel parameters
+=#
+result2 = demo_bo(tune_hyperparameters = true)
+result2.p[end]
+
+#
+anim2 = Animation()
+for p in result2.p
+    frame(anim2, p)
+end
+gif(anim2, "ackley_bo-tune.gif"; fps = 2)
+
+#
+ibest = argmin(result1.y)
+"Best observed: x = $(round(result1.x[ibest]; digits=5)), " *
+ "f(x) = $(round(result1.y[ibest]; digits = 5))"
