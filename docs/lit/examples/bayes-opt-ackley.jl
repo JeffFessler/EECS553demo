@@ -105,7 +105,7 @@ end;
 #=
 Gaussian process with a constant mean and Gaussian kernel:
 
-``k(x, z) = σf² exp(-(x-z)² / (2ℓ²))``
+``k(x, z) = σ_f² \exp(-(x-z)² / (2ℓ²))``
 =#
 kernel(x, z, ℓ, σf) = σf^2 * exp(-0.5 * ((x - z) / ℓ)^2)
 
