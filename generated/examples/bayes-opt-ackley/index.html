@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Bayesian Optimization · EECS553demo</title><meta name="title" content="Bayesian Optimization · EECS553demo"/><meta property="og:title" content="Bayesian Optimization · EECS553demo"/><meta property="twitter:title" content="Bayesian Optimization · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/bayes-opt-ackley/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/bayes-opt-ackley/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/bayes-opt-ackley/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Bayesian Optimization</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Expected-improvement-for-minimization"><span>Expected improvement for minimization</span></a></li><li><a class="tocitem" href="#Plot-the-posterior-and-acquisition-function"><span>Plot the posterior and acquisition function</span></a></li><li><a class="tocitem" href="#Sequential-Bayesian-optimization-demo"><span>Sequential Bayesian optimization demo</span></a></li><li><a class="tocitem" href="#Demo-with-fixed-kernel-parameters"><span>Demo with fixed kernel parameters</span></a></li><li><a class="tocitem" href="#Demo-with-tuned-kernel-parameters"><span>Demo with tuned kernel parameters</span></a></li></ul></li><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../eigendigit/">PCA for MNIST digits</a></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../krr/">Kernel ridge regression</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../mlp3/">Multilayer perceptron (MLP) demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-house/">Linear regression of house prices</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li><a class="tocitem" href="../svm15/">SVM demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Bayesian Optimization</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Bayesian Optimization</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/bayes-opt-ackley.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="bo-ackley"><a class="docs-heading-anchor" href="#bo-ackley">Bayesian Optimization</a><a id="bo-ackley-1"></a><a class="docs-heading-anchor-permalink" href="#bo-ackley" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Bayesian_optimization">Bayesian optimization</a> of the 1D <a href="https://en.wikipedia.org/wiki/Ackley_function">Ackley function</a>. in Julia.</p><p>Example aided by GPT-6.1 Sol(Agent) 2026-10-28.</p><p>It implements the Gaussian process (GP) and expected improvement (EI) acquisition function directly without calling any Bayesian optimization package.</p><p>At each iteration, it displays:</p><ul><li>the true function, observed samples, GP posterior mean, and a shaded ±2-standard-deviation uncertainty band.</li><li>expected improvement, and a vertical line at the proposed next sample.</li></ul><p>The true function is plotted for illustration only; the optimizer uses only the sampled values.</p><h3 id="A-few-details-worth-noting"><a class="docs-heading-anchor" href="#A-few-details-worth-noting">A few details worth noting</a><a id="A-few-details-worth-noting-1"></a><a class="docs-heading-anchor-permalink" href="#A-few-details-worth-noting" title="Permalink"></a></h3><ul><li>Acquisition maximization is a dense grid search.</li></ul><p>This is simple and effective in 1D; the grid spacing determines the precision of each proposed sample.</p><ul><li>Kernel hyperparameter fitting is optional.</li></ul><p>With only two or three observations, marginal-likelihood estimates can be unstable. Set <code>tune_hyperparameters=false</code> to use fixed parameters and make the posterior evolution easier to interpret.</p><ul><li><p>The shaded band is pointwise GP uncertainty, not a simultaneous confidence band or a guarantee that the true function lies inside it.</p></li><li><p>The final frame’s vertical line indicates an additional recommendation that has not yet been evaluated.</p></li></ul><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/bayes-opt-ackley.jl"><code>bayes-opt-ackley.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/bayes-opt-ackley.ipynb"><code>bayes-opt-ackley.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/bayes-opt-ackley.ipynb"><code>bayes-opt-ackley.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;Plots&quot;
+        &quot;Random&quot;
+        &quot;Statistics&quot;
+        &quot;SpecialFunctions&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: cholesky, Symmetric, LowerTriangular, diag, dot
+using MIRTjim: jim, prompt
+using Plots: plot, plot!, scatter!, vline!, Animation, frame, gif
+using Plots: default, gui, savefig
+using Plots.PlotMeasures: mm
+using Random: MersenneTwister
+using Statistics: mean
+using SpecialFunctions: erf
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><p>Objective: 1D Ackley function; global minimum f(0) = 0.</p><pre><code class="language-julia hljs">function ackley(x::Real)
+    a, b, c = 20.0, 0.2, 2π
+    return -a * exp(-b * abs(x)) - exp(cos(c * x)) + a + exp(1)
+end;</code></pre><p>Gaussian process with a constant mean and Gaussian kernel:</p><p><span>$k(x, z) = σ_f² \exp(-(x-z)² / (2ℓ²))$</span></p><pre><code class="language-julia hljs">kernel(x, z, ℓ, σf) = σf^2 * exp(-0.5 * ((x - z) / ℓ)^2)
+
+struct GPModel
+    x::Vector{Float64}
+    m::Float64
+    ℓ::Float64
+    σf::Float64
+    L::Matrix{Float64}
+    α::Vector{Float64}
+end
+
+
+&quot;&quot;&quot;
+Fit a GP for specified hyperparameters.
+
+Returns the model and its log marginal likelihood.
+Cholesky solves avoid explicitly forming the inverse covariance.
+
+σn is the observation-noise standard deviation.
+&quot;&quot;&quot;
+function fit_gp(x, y; ℓ = 1.0, σf = 5.0, σn = 1e-6)
+    x = Float64.(x)
+    y = Float64.(y)
+    n = length(x)
+
+    m = mean(y) # Simple plug-in estimate of the constant prior mean.
+    r = y .- m
+
+    K = [kernel(xi, xj, ℓ, σf) for xi in x, xj in x]
+    for i in 1:n
+        K[i, i] += σn^2 + 1e-10 # noise variance + numerical jitter
+    end
+
+    C = cholesky(Symmetric(K))
+    α = C \ r
+
+    loglik = -0.5 * dot(r, α) - sum(log, diag(C.L)) - 0.5 * n * log(2π)
+
+    gp = GPModel(x, m, ℓ, σf, Matrix(C.L), α)
+    return gp, loglik
+end
+
+
+&quot;&quot;&quot;
+Select length scale and signal standard deviation
+using a small grid search
+over the log marginal likelihood.
+
+This keeps the example independent of optimization packages.
+The constant mean is held at mean(y) during the search.
+&quot;&quot;&quot;
+function fit_gp_grid(x, y; σn = 1e-6)
+    lengthscales = exp.(range(log(0.15), log(4.0), length = 18))
+    signal_stds = exp.(range(log(0.5), log(15.0), length = 12))
+
+    best_gp = nothing
+    best_loglik = -Inf
+
+    for ℓ in lengthscales, σf in signal_stds
+        gp, loglik = fit_gp(x, y; ℓ, σf, σn)
+        if loglik &gt; best_loglik
+            best_gp = gp
+            best_loglik = loglik
+        end
+    end
+
+    return best_gp
+end
+
+
+&quot;&quot;&quot;
+Posterior mean and standard deviation of the latent function.
+
+The uncertainty excludes observation noise.
+&quot;&quot;&quot;
+function predict_gp(gp::GPModel, xnew)
+    Kxs = [kernel(xi, xj, gp.ℓ, gp.σf) for xi in gp.x, xj in xnew]
+
+    μ = gp.m .+ Kxs&#39; * gp.α
+
+    # diag(Kss - Ksx * inv(Kxx) * Kxs), without an inverse.
+    V = LowerTriangular(gp.L) \ Kxs
+    variance = gp.σf^2 .- vec(sum(abs2, V; dims = 1))
+
+    # Clip small negative values caused by roundoff.
+    σ = @. sqrt(max(variance, 0))
+    return μ, σ
+end;</code></pre><h2 id="Expected-improvement-for-minimization"><a class="docs-heading-anchor" href="#Expected-improvement-for-minimization">Expected improvement for minimization</a><a id="Expected-improvement-for-minimization-1"></a><a class="docs-heading-anchor-permalink" href="#Expected-improvement-for-minimization" title="Permalink"></a></h2><ul><li>improvement = fbest - μ - ξ</li><li>EI = improvement * Φ(z) + σ * φ(z)</li><li>z  = improvement / σ</li><li>ξ &gt; 0 encourages some additional exploration.</li></ul><pre><code class="language-julia hljs">normal_pdf(z) = exp(-0.5 * z^2) / sqrt(2π)
+normal_cdf(z) = 0.5 * (1 + erf(z / sqrt(2)))
+
+function expected_improvement(μ, σ, fbest; ξ = 0.01)
+    return map(μ, σ) do mi, si
+        improvement = fbest - mi - ξ
+        if si ≤ 1e-12
+            max(improvement, 0.0)
+        else
+            z = improvement / si
+            max(0, improvement * normal_cdf(z) + si * normal_pdf(z))
+        end
+    end
+end;</code></pre><h2 id="Plot-the-posterior-and-acquisition-function"><a class="docs-heading-anchor" href="#Plot-the-posterior-and-acquisition-function">Plot the posterior and acquisition function</a><a id="Plot-the-posterior-and-acquisition-function-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-the-posterior-and-acquisition-function" title="Permalink"></a></h2><pre><code class="language-julia hljs">function plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
+
+    p1 = plot(
+        xaxis = (&quot;λ&quot;, (first(grid), last(grid)), -4:2:4),
+        yaxis = (&quot;F(λ)&quot;, (-5, 20), -5:5:20),
+        title = &quot;$(string(length(x),pad=2)) observations&quot;,
+        legend = :bottomright,
+    )
+
+    scatter!(p1,
+        x, y;
+        color = :red,
+        markersize = 5,
+        label = &quot;Observed samples&quot;,
+    )
+
+    scatter!( # show best value so far in green
+        p1, [x[argmin(y)]], [minimum(y)];
+        color = :green,
+        marker = :star,
+        markersize = 5,
+    )
+
+    step == 14 &amp;&amp; # only show true function at end!
+        plot!(
+            p1, grid, truth;
+            color = :black,
+            linewidth = 2,
+            label = &quot;True F(λ)&quot;, # Ackley function
+        )
+
+    plot!(p1,
+        grid, μ;
+        ribbon = 2 .* σ,
+        fillalpha = 0.20,
+        color = :royalblue,
+        linewidth = 2,
+        label = &quot;GP mean ± 2 SD&quot;,
+    )
+
+    vline!(
+        p1, [xnext];
+        color = :darkorange,
+        linestyle = :dash,
+        linewidth = 2,
+        label = &quot;Next sample&quot;,
+    )
+
+    p2 = plot(
+        grid, ei;
+        color = :purple,
+        linewidth = 2,
+        left_margin = 10mm,
+        label = &quot;Expected improvement&quot;,
+        xaxis = (&quot;λ&quot;, (first(grid), last(grid)), -4:2:4),
+        yaxis = (&quot;Expected Improvement (λ)&quot;, [0]),
+        title = latexstring(&quot;ℓ=$(round(gp.ℓ; digits = 2)), &quot; *
+            &quot;σ_f=$(round(gp.σf; digits = 2))&quot;),
+        legend = :topright,
+    )
+
+    vline!(
+        p2, [xnext];
+        color = :darkorange,
+        linestyle = :dash,
+        linewidth = 2,
+        label = &quot;Next sample&quot;,
+    )
+
+    p = plot(p1, p2; layout = (2, 1), size = (950, 750))
+
+    return p
+end;</code></pre><h2 id="Sequential-Bayesian-optimization-demo"><a class="docs-heading-anchor" href="#Sequential-Bayesian-optimization-demo">Sequential Bayesian optimization demo</a><a id="Sequential-Bayesian-optimization-demo-1"></a><a class="docs-heading-anchor-permalink" href="#Sequential-Bayesian-optimization-demo" title="Permalink"></a></h2><pre><code class="language-julia hljs">function demo_bo(;
+    seed = 2,
+    ninitial = 3,
+    nsteps = 14,
+    bounds = (-5.0, 5.0),
+    ngrid = 2001,
+    ξ = 0.01,
+    tune_hyperparameters = true,
+    fixed_ℓ = 0.5,
+    fixed_σf = 4.0,
+)
+    @assert ninitial ≥ 2
+    @assert nsteps ≥ 0
+    @assert bounds[1] &lt; bounds[2]
+    @assert ngrid &gt; ninitial + nsteps
+
+    rng = MersenneTwister(seed)
+    lo, hi = bounds
+
+    # Start with a few uniformly random evaluations.
+    x = sort(lo .+ (hi - lo) .* rand(rng, ninitial))
+    y = ackley.(x)
+
+    grid = collect(range(lo, hi; length = ngrid))
+    truth = ackley.(grid) # Visualization only
+
+    p = Vector{Any}(undef, nsteps+1)
+    for step in 0:nsteps
+        gp = tune_hyperparameters ? fit_gp_grid(x, y) :
+            first(fit_gp(x, y; ℓ = fixed_ℓ, σf = fixed_σf))
+
+        μ, σ = predict_gp(gp, grid)
+        ei = expected_improvement(μ, σ, minimum(y); ξ)
+
+        # Maximize acquisition on a dense 1D grid.
+        # Prevent selecting a location already sampled.
+        scores = copy(ei)
+        for j in eachindex(grid)
+            if any(abs(grid[j] - xi) &lt; 1e-8 for xi in x)
+                scores[j] = -Inf
+            end
+        end
+
+        jnext = argmax(scores)
+        xnext = grid[jnext]
+
+        p[step+1] = plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
+
+        step == nsteps &amp;&amp; break
+
+        push!(x, xnext)
+        push!(y, ackley(xnext))
+    end
+
+    return (; x, y, p)
+end;</code></pre><h2 id="Demo-with-fixed-kernel-parameters"><a class="docs-heading-anchor" href="#Demo-with-fixed-kernel-parameters">Demo with fixed kernel parameters</a><a id="Demo-with-fixed-kernel-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Demo-with-fixed-kernel-parameters" title="Permalink"></a></h2><pre><code class="language-julia hljs">result1 = demo_bo(; tune_hyperparameters = false)
+result1.p[end]</code></pre><img src="80307469.svg" alt="Example block output"/><pre><code class="language-julia hljs">anim1 = Animation()
+for p in result1.p
+    frame(anim1, p)
+end
+gif(anim1, &quot;ackley_bo.gif&quot;; fps = 2)</code></pre><img src="2e43e99b.gif" alt="Example block output"/><pre><code class="language-julia hljs">ibest = argmin(result1.y)
+&quot;Best observed: x = $(round(result1.x[ibest]; digits=5)), &quot; *
+ &quot;f(x) = $(round(result1.y[ibest]; digits = 5))&quot;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;Best observed: x = -0.015, f(x) = 0.07195&quot;</code></pre><h2 id="Demo-with-tuned-kernel-parameters"><a class="docs-heading-anchor" href="#Demo-with-tuned-kernel-parameters">Demo with tuned kernel parameters</a><a id="Demo-with-tuned-kernel-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Demo-with-tuned-kernel-parameters" title="Permalink"></a></h2><pre><code class="language-julia hljs">result2 = demo_bo(tune_hyperparameters = true)
+result2.p[end]</code></pre><img src="ec8e2d83.svg" alt="Example block output"/><pre><code class="language-julia hljs">anim2 = Animation()
+for p in result2.p
+    frame(anim2, p)
+end
+gif(anim2, &quot;ackley_bo-tune.gif&quot;; fps = 2)</code></pre><img src="647aa581.gif" alt="Example block output"/><pre><code class="language-julia hljs">ibest = argmin(result1.y)
+&quot;Best observed: x = $(round(result1.x[ibest]; digits=5)), &quot; *
+ &quot;f(x) = $(round(result1.y[ibest]; digits = 5))&quot;</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;Best observed: x = -0.015, f(x) = 0.07195&quot;</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../../">« Home</a><a class="docs-footer-nextpage" href="../decision-boundary/">Decision boundaries »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Friday 30 October 2026 15:10">Friday 30 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
