@@ -80,6 +80,7 @@ using LinearAlgebra: cholesky, Symmetric, LowerTriangular, diag, dot
 using MIRTjim: jim, prompt
 using Plots: plot, plot!, scatter!, vline!, Animation, frame, gif
 using Plots: default, gui, savefig
+using Plots.PlotMeasures: mm
 using Random: MersenneTwister
 using Statistics: mean
 using SpecialFunctions: erf
@@ -98,13 +99,13 @@ isinteractive() ? jim(:prompt, true) : prompt(:draw);
 function ackley(x::Real)
     a, b, c = 20.0, 0.2, 2π
     return -a * exp(-b * abs(x)) - exp(cos(c * x)) + a + exp(1)
-end
+end;
 
 
 #=
 Gaussian process with a constant mean and Gaussian kernel:
 
-k(x, z) = σf² exp(-(x-z)² / (2ℓ²))
+``k(x, z) = σf² exp(-(x-z)² / (2ℓ²))``
 =#
 kernel(x, z, ℓ, σf) = σf^2 * exp(-0.5 * ((x - z) / ℓ)^2)
 
@@ -193,11 +194,11 @@ function predict_gp(gp::GPModel, xnew)
     ## Clip small negative values caused by roundoff.
     σ = @. sqrt(max(variance, 0))
     return μ, σ
-end
+end;
 
 
 #=
-## Expected improvement for MINIMIZATION.
+## Expected improvement for minimization
 
 - improvement = fbest - μ - ξ
 - EI = improvement * Φ(z) + σ * φ(z)
@@ -218,7 +219,7 @@ function expected_improvement(μ, σ, fbest; ξ = 0.01)
             max(0, improvement * normal_cdf(z) + si * normal_pdf(z))
         end
     end
-end
+end;
 
 
 #=
@@ -229,9 +230,10 @@ function plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
     p1 = plot(
         xaxis = ("λ", (first(grid), last(grid)), -4:2:4),
         yaxis = ("F(λ)", (-5, 20), -5:5:20),
-        title = "$(length(x)) observations",
+        title = "$(string(length(x),pad=2)) observations",
         legend = :bottomright,
     )
+#src savefig(p, "bo-$(string(step,pad=2))-ei.pdf")
 
     scatter!(p1,
         x, y;
@@ -278,9 +280,10 @@ function plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
         grid, ei;
         color = :purple,
         linewidth = 2,
+        left_margin = 10mm,
         label = "Expected improvement",
         xaxis = ("λ", (first(grid), last(grid)), -4:2:4),
-        ylabel = "Expected Improvement (λ)",
+        yaxis = ("Expected Improvement (λ)", [0]),
         title = latexstring("ℓ=$(round(gp.ℓ; digits = 2)), " *
             "σ_f=$(round(gp.σf; digits = 2))"),
         legend = :topright,
@@ -298,7 +301,7 @@ function plot_step(grid, truth, x, y, μ, σ, ei, xnext, gp, step)
 #src savefig(p, "bo-$(string(step,pad=2))-ei.pdf")
 
     return p
-end
+end;
 
 
 #=
@@ -360,7 +363,7 @@ function demo_bo(;
     end
 
     return (; x, y, p)
-end
+end;
 
 
 #=
