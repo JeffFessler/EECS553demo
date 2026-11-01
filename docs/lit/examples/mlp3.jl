@@ -224,7 +224,7 @@ to_vec(θt) = reduce(vcat, map(vec, θt)); # tuple to vector
 function to_tuple(flat_vec::AbstractVector, template) # vector to tuple
     ## Wrap flat vector to track current index statefully
     items = Iterators.Stateful(flat_vec)
-   
+
     ## Map over the template to extract the exact number of elements and reshape
     return map(template) do orig_arr
         len = length(orig_arr)
