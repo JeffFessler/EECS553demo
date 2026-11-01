@@ -172,10 +172,13 @@ prompt()
 
 #=
 ## SVM classifier design
+Default
+(kernel hyperparameter)[https://juliaai.github.io/MLJ.jl/dev/models/SVC_LIBSVM/#Hyper-parameters]
+is γ = 1/d = 1/2
 =#
 
 kernel = Kernel.Linear; klabel = "Linear"; kernel_str = "linear"
-kernel = Kernel.RadialBasis; klabel = "RadialBasis"; kernel_str = "rbf"
+kernel = Kernel.RadialBasis; klabel = "RadialBasis(γ=1/d=1/$K)"; kernel_str = "rbf"
 topm1(y) = y == digitn[1] ? 1 : -1
 model = svmtrain(reshape(Xtrain, K, :), topm1.(ytrain); kernel);
 
@@ -225,7 +228,7 @@ x2_range = range(-6, 6, 223)
 function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
     classifier::Function = svm_classify1,
     title::AbstractString =
-        "L.R. train error=$train_error %, test error = $test_error %",
+        "SVM train error=$train_error %, test error = $test_error %",
 )
     tmpc = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
     tmpd = [svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
@@ -235,7 +238,7 @@ function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
 #src    clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
 #src    clim = tuple(digitn...), colorbar_ticks = digitn,
         colorbar_title = L"⟨w,Φ(x)⟩+b",
-        annotate = (0, 5, "kernel = $kernel", :white),
+        annotate = (0, 5, "kernel = $klabel", :white),
         args...)
     plot!(p, colorbar = true)
 
