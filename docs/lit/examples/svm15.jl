@@ -256,7 +256,7 @@ p0 = svm_plot(train_error, test1_error);
 
 # Mark support vectors
 scatter!(p0, sv[1,:], sv[2,:], color = :white, marker = :x, alpha = 0.4,
-    annotate = (-3, -5, "$n_sv / $(length(ytrain)) SVs", :yellow),
+    annotate = (-1, -5, "$n_sv / $(length(ytrain)) SVs, C/n=$(model.cost)", :yellow),
 )
 
 #
