@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>QDA demo · EECS553demo</title><meta name="title" content="QDA demo · EECS553demo"/><meta property="og:title" content="QDA demo · EECS553demo"/><meta property="twitter:title" content="QDA demo · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/qda17/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/qda17/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/qda17/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li class="is-active"><a class="tocitem" href>QDA demo</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Visualize-embedded-data"><span>Visualize embedded data</span></a></li><li><a class="tocitem" href="#Illustrate-maximum-likelihood-estimates"><span>Illustrate maximum-likelihood estimates</span></a></li><li><a class="tocitem" href="#QDA-classifier"><span>QDA classifier</span></a></li><li><a class="tocitem" href="#Classification-errors"><span>Classification errors</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>QDA demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>QDA demo</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/qda17.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="lda17"><a class="docs-heading-anchor" href="#lda17">QDA demo</a><a id="lda17-1"></a><a class="docs-heading-anchor-permalink" href="#lda17" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/Quadratic_classifier#Quadratic_discriminant_analysis">Quadratic discriminant analysis (QDA)</a> with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/qda17.jl"><code>qda17.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/qda17.ipynb"><code>qda17.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/qda17.ipynb"><code>qda17.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: svd, det
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using Plots: default, gui, savefig, plot, plot!, scatter!, RGB, cgrad
+using Random: randperm, seed!
+using Statistics: mean
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=18, legendfontsize=18, titlefontsize=18)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data) || true
+    digitn = [1,7]
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # function to extract the 1st `nrep` examples of digit n:
+    data = n -&gt; dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
+    data = cat(dims=4, data.(digitn)...)
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data)
+    data = data[:,2:ny,:,:] # make images non-square to force debug
+    ny = size(data,2)
+    size(data) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 2)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar=nothing, size=(600,200), tickfontsize=6, ncol=10)
+
+digit_str = prod(&quot;$d&quot; for d in digitn); # string for file names
+# savefig(pd, &quot;lda$digit_str-digit.pdf&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">&quot;17&quot;</code></pre><p>Partition data into train / validate / test</p><pre><code class="language-julia hljs">ntrain = 200
+nvalid = 100
+ntest1 = 600
+seed!(0)
+tmp = randperm(nrep)
+itrain = (1:ntrain)
+ivalid = (1:nvalid) .+ ntrain
+itest1 = (1:ntest1) .+ (ntrain + nvalid)
+dtrain = data[:,:,tmp[itrain],:]
+dvalid = data[:,:,tmp[ivalid],:]
+dtest1 = data[:,:,tmp[itest1],:];</code></pre><p>Sample mean training image:</p><pre><code class="language-julia hljs">dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
+pm = jim(dmean; title=&quot;Mean image&quot;)
+
+# savefig(pm, &quot;lda$digit_str-mean.pdf&quot;)</code></pre><img src="6199c73d.svg" alt="Example block output"/><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><p>Use two components for easy visualization</p><pre><code class="language-julia hljs">X = reshape(dtrain .- dmean, nx*ny, :) # unfold
+K = 2
+U = svd(X).U[:,1:K];</code></pre><p>Show basis vectors</p><pre><code class="language-julia hljs">tmp = reshape(U, nx, ny, K)
+pu = jim(tmp; title=&quot;Basis functions, K=$K&quot;, color=:cividis, size=(700,400))
+
+# savefig(pu, &quot;lda$digit_str-u.pdf&quot;)</code></pre><img src="4e9567a2.svg" alt="Example block output"/><h2 id="Visualize-embedded-data"><a class="docs-heading-anchor" href="#Visualize-embedded-data">Visualize embedded data</a><a id="Visualize-embedded-data-1"></a><a class="docs-heading-anchor-permalink" href="#Visualize-embedded-data" title="Permalink"></a></h2><pre><code class="language-julia hljs">embed(data, n) = reshape(U&#39; * reshape(data .- dmean, nx*ny, :), K, n, :)
+Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
+Xvalid = embed(dvalid, nvalid)
+Xtest1 = embed(dtest1, ntest1)
+labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
+ytrain = labeler(ntrain)
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1)
+
+args = (;
+ xaxis = (L&quot;x_1&quot;, (-1,1) .* 6, -4:2:4),
+ yaxis = (L&quot;x_2&quot;, (-1,1) .* 6, -4:2:4),
+ aspect_ratio = 1,
+ size = (550, 500),
+)
+
+petr = plot(; title=&quot;Train data&quot;, args...)
+pete = plot(; title=&quot;Test data&quot;, args...)
+
+colors = (:blue, :red)
+for id in 1:ndigit
+    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id], label=&quot;$(digitn[id])&quot;,
+      color = colors[id])
+    scatter!(pete, Xtest1[1,:,id], Xtest1[2,:,id], label=&quot;$(digitn[id])&quot;,
+      color = colors[id])
+end
+pp = plot(petr, pete; size = (950, 500))
+
+# savefig(pp, &quot;lda$digit_str-data.pdf&quot;)</code></pre><img src="c6ee5d64.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><h2 id="Illustrate-maximum-likelihood-estimates"><a class="docs-heading-anchor" href="#Illustrate-maximum-likelihood-estimates">Illustrate maximum-likelihood estimates</a><a id="Illustrate-maximum-likelihood-estimates-1"></a><a class="docs-heading-anchor-permalink" href="#Illustrate-maximum-likelihood-estimates" title="Permalink"></a></h2><p>Means</p><pre><code class="language-julia hljs">means = [vec(mean(X; dims=2)) for X in eachslice(Xtrain, dims=3)]
+function plot_means!(p; dolabel::Bool = true)
+    for id in 1:ndigit
+        scatter!(p, [means[id][1]], [means[id][2]]; color = colors[id],
+            markerstrokecolor = :black, marker = :square, markersize = 7,
+            label = dolabel ? latexstring(&quot;\\mathbf{μ}_$(digitn[id])&quot;) : &quot;&quot;,
+        )
+    end
+    return p
+end
+plot_means!(petr)
+plot!(petr, title = &quot;Train data with sample means&quot;)
+petr</code></pre><img src="1a4edd21.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+function add_ellipse!(p, mean, Σ)
+    z = hcat([collect(sincos(t)) for t in range(0, 2π, 101)]...)
+    xc = sqrt(2Σ) * z
+    return plot!(p, mean[1] .+ xc[1,:], mean[2] .+ xc[2,:], color=:black)
+end
+
+# savefig(petr, &quot;lda$digit_str-means.pdf&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">add_ellipse! (generic function with 1 method)</code></pre><p>Plot de-meaned data:</p><pre><code class="language-julia hljs">Xdemean = cat([Xtrain[:,:,id] .- means[id] for id in 1:ndigit]..., dims=3)
+
+pdm = Vector{Any}(undef, ndigit)
+Σ = Vector{Matrix{&lt;:Number}}(undef, ndigit)
+for id in 1:ndigit
+    p = plot(; title=&quot;Train data de-meaned, k=$id&quot;, args...)
+    scatter!(p, Xdemean[1,:,id], Xdemean[2,:,id],
+        color = colors[id], label = &quot;$(digitn[id])&quot;,
+    )
+
+    local tmp = Xdemean[:,:,id]
+    Σ[id] = tmp * tmp&#39; / size(tmp,2) # sample covariance
+
+    add_ellipse!(p, zeros(2), Σ[id])
+    pdm[id] = p
+end
+pc = plot(pdm..., size = (950, 500))</code></pre><img src="ff9df2b0.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+# savefig(pc, &quot;qda$digit_str-cov.pdf&quot;)</code></pre><h2 id="QDA-classifier"><a class="docs-heading-anchor" href="#QDA-classifier">QDA classifier</a><a id="QDA-classifier-1"></a><a class="docs-heading-anchor-permalink" href="#QDA-classifier" title="Permalink"></a></h2><p>brute force with argmax</p><pre><code class="language-julia hljs">sqrtΣinv = @. inv(sqrt(Σ))
+function qda_classify1(
+    x::AbstractVector;
+    means::Vector{&lt;:Vector} = means,
+    sqrtΣinv::Vector{&lt;:Matrix} = sqrtΣinv,
+    prob::AbstractVector = fill(0.5, length(means)),
+)
+    score = copy(prob) # πₖ
+    for id in 1:length(means)
+        r = sqrtΣinv[id] * (x - means[id]) # whitened residual
+        score[id] *= det(sqrtΣinv[id]) * exp.(-(1/2) * sum(abs2, r))
+    end
+    return digitn[argmax(score)]
+end
+
+
+α = 0.2
+color = cgrad([RGB(1-α, 1-α, 1), :black, RGB(1, 1-α, 1-α)])
+x1_range = range(-6, 6, 221)
+x2_range = range(-6, 6, 223)
+function qda_plot(error::Real)
+    error = round(error; sigdigits=2)
+    tmp = [qda_classify1([x1; x2]) for x1 in x1_range, x2 in x2_range]
+    p = jim(x1_range, x2_range, tmp; color,
+            title = &quot;QDA train error=$error %&quot;,
+            prompt = false, args...,
+        )
+    for id in 1:ndigit
+        scatter!(p, Xtrain[1,:,id], Xtrain[2,:,id],
+            color = colors[id],
+            label = &quot;$(digitn[id])&quot;,
+        )
+        add_ellipse!(p, means[id], Σ[id])
+    end
+    plot_means!(p, dolabel = false)
+    return p
+end;</code></pre><h2 id="Classification-errors"><a class="docs-heading-anchor" href="#Classification-errors">Classification errors</a><a id="Classification-errors-1"></a><a class="docs-heading-anchor-permalink" href="#Classification-errors" title="Permalink"></a></h2><p>for train / validate / test</p><pre><code class="language-julia hljs">function errors(data, label)
+    data = reshape(data, K, :) # (d, n)
+    return 100 * count(qda_classify1.(eachcol(data)) .!= label) / size(data, 2)
+end
+train_error = errors(Xtrain, ytrain)
+valid_error = errors(Xvalid, yvalid)
+test1_error = errors(Xtest1, ytest1)
+err = [ train_error valid_error test1_error ]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1×3 Matrix{Float64}:
+ 1.5  2.5  2.08333</code></pre><p>Plot data and decision regions:</p><pre><code class="language-julia hljs">p0 = qda_plot(train_error)</code></pre><img src="950059d8.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+# savefig(p0, &quot;qda$digit_str-v1.pdf&quot;)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../logistic-sparse/">« Sparse logistic regression with POGM</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Thursday 3 September 2026 02:40">Thursday 3 September 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
