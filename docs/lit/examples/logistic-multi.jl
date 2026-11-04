@@ -51,7 +51,7 @@ using Plots: plot, plot!, scatter!, histogram!, contour!
 using Random: randperm, seed!
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
- tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=14)
 
 # The following line is helpful when running this file as a script;
 # this way it will prompt user to hit a key after each figure is displayed.

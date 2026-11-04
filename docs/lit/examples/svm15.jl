@@ -232,7 +232,6 @@ function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
 )
     tmpc = [classifier([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
     tmpd = [svm_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
-@show size(tmpd) typeof(tmpd)
 
     p = jim(x1_range, x2_range, tmpd; color, title, prompt = false,
 #src    clim = (0,1), colorbar_ticks = 0:0.5:1, # digitn,
@@ -240,13 +239,15 @@ function svm_plot(train_error::Real = NaN, test_error::Real = NaN;
         colorbar_title = L"⟨w,Φ(x)⟩+b",
         annotate = (0, 5, "kernel = $klabel", :white),
         args...)
-    plot!(p, colorbar = true)
 
     ## Add decision boundary
-    contour!(p, x1_range, x2_range, tmpc'; color = :magenta)#, colorbar = :none)
+    contour!(p, x1_range, x2_range, tmpc'; linecolor = :magenta,
+        colorbar_entry = false)
+
     if kernel == Kernel.Linear
         contour!(p, x1_range, x2_range, abs.(tmpd)';
-            color = :green, levels=[1e-3*maximum(tmpd)]) #, colorbar = :none
+            color = :green, levels = [1e-3*maximum(tmpd)],
+            colorbar_entry = false)
     end
     add_points!(p, Xtrain)
     return p

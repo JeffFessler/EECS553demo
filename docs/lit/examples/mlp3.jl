@@ -289,14 +289,14 @@ opt = optimize(erm_cost, θ0v, LBFGS(); autodiff = AutoForwardDiff())
 θhat_t = to_tuple(θhat_v)
 
 
-# MLP "discriminant" vector
-function mlp_discriminant(x::AbstractVector; θ::NamedTuple = θhat_t)
+# MLP "softmax" vector
+function mlp_softmax(x::AbstractVector; θ::NamedTuple = θhat_t)
     return softmax(model(x, θ))
 end;
 
 # MLP classifier that returns digit labels (not class index!)
 function mlp_classify1(x::AbstractVector; kwargs...)
-    return digitn[argmax(mlp_discriminant(x; kwargs...))]
+    return digitn[argmax(mlp_softmax(x; kwargs...))]
 end;
 
 #src mlp_classify1(zeros(K)) # test
@@ -329,10 +329,10 @@ rgb(class::Int) =
     throw("bug")
 x1_range = range(xlim..., 201)
 x2_range = range(ylim..., 203)
-#src tmp = [mlp_discriminant([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+tmps = [mlp_softmax([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
 #src tmp = [RGB(((1-α) .+ α*p)...) for p in tmp]
-tmp = [mlp_classify1([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
-tmp = rgb.(tmp)
+tmpc = [mlp_classify1([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
+tmp = rgb.(tmpc)
 
 p0 = jim(x1_range, x2_range, tmp;
     title = "MLP train error = $train_error %, test error = $test1_error %",
@@ -350,7 +350,6 @@ end;
 #=
 ## Plot decision boundaries
 =#
-#src tmp = [mlp_classify1([x1; x2; zeros(K-2)]) for x1 in x1_range, x2 in x2_range]
 #src contour!(p0, x1_range, x2_range, tmp'; color = :black, colorbar = :none)
 
 p0

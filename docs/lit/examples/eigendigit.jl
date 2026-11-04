@@ -41,7 +41,7 @@ using LinearAlgebra: svd, norm
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
 using Plots: default, gui, savefig, RGB, cgrad, twinx
-using Plots: plot, plot!, scatter, scatter!, histogram!, contour!
+using Plots: plot, scatter
 using Statistics: mean
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
  tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=16)
@@ -165,13 +165,13 @@ for id in 1:ndigit
     ib = argmax(err[id,:]) # worst-case
     data_bad = data_train[:,:,ib,id]
     pred_bad = Xhat[:,:,ib,id]
-    tmp = data_bad - pred_bad
-    @show nrmse = round(norm(tmp) / norm(data_bad), sigdigits=3) # NRMSE
+    tmp_ = data_bad - pred_bad
+    @show nrmse = round(norm(tmp_) / norm(data_bad), sigdigits=3) # NRMSE
     pbad[id] = jim(
         jim(data_bad; title="Original", clim = (0,1), colorbar_ticks = [0,1]),
         jim(pred_bad; title="Approx, K=$K",
             clim = (0,1), colorbar_ticks = [0,1]),
-        jim(tmp; title="NRMSE=$nrmse", color = :bwr,
+        jim(tmp_; title="NRMSE=$nrmse", color = :bwr,
             clim = (-1,1).*0.01, colorbar_ticks = (-1:1)*0.01),
         layout = (3,1),
     )
