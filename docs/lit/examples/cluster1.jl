@@ -165,7 +165,8 @@ prompt()
 ## savefig(pp, "km$digit_str-embed.pdf")
 
 
-function plot_cluster(ncluster::Int)
+function plot_cluster(ncluster::Int; seed::Int = 3)
+    seed!(seed)
     out = kmeans(X, ncluster)
 
     p = plot(; title = "K-means K=$ncluster", args...)
@@ -175,7 +176,7 @@ function plot_cluster(ncluster::Int)
             label = "$k", color = colors[k])
         ck = out.centers[:,k]
         scatter!(p, [ck[1]], [ck[2]]; markerstrokecolor = :black,
-            marker = :square, color = colors[k], markersize = 6,)
+            marker = :square, color = colors[k], markersize = 5,)
     end
     return p
 end
@@ -190,3 +191,24 @@ pk = plot(p2, p3, p4, p5;
 )
 
 ## savefig(pk, "km$digit_str-kmeans.pdf")
+
+
+#=
+## Examine some cluster centers
+=#
+seed!(3)
+out4 = kmeans(X, 4)
+i1 = argmin(vec(sum(abs2, out4.centers[:,1] .- X, dims=1)))
+i3 = argmin(vec(sum(abs2, out4.centers[:,3] .- X, dims=1)))
+i4 = argmin(vec(sum(abs2, out4.centers[:,4] .- X, dims=1)))
+p4c = jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i4])
+
+p13 = plot(
+ jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i1];
+  title = "Centroid 1"),
+ jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i3];
+  title = "Centroid 3"),
+ size = (650, 300),
+)
+
+## savefig(p13, "km$digit_str-center13.pdf")
