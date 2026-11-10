@@ -1,5 +1,6 @@
 [deps]
 ADTypes = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
