@@ -50,7 +50,7 @@ end
 
 using Clustering: kmeans
 using InteractiveUtils: versioninfo
-using LaTeXStrings: @L_str
+using LaTeXStrings: @L_str, latexstring
 using LinearAlgebra: cholesky, det, Symmetric, I
 using MIRTjim: jim, prompt
 using Plots: default, gui, savefig, RGB
@@ -151,11 +151,11 @@ args = (;
 
 colors = (:red, :green, :blue, :magenta, :orange)
 
-function plot_true!(p; μ = μ_true, Σ = Σ_true)
+function plot_true!(p; μ = μ_true, Σ = Σ_true, extra::String = "")
     for k in eachindex(μ)
         z = ellipse(μ[k], Σ[k])
         plot!(p, z[1,:], z[2,:]; color = :black, linestyle = :dash,
-            linewidth = 2, label = (k == 1 ? "true model" : ""))
+            linewidth = 2, label = (k == 1 ? "true model$extra" : ""))
     end
     return p
 end
@@ -163,12 +163,13 @@ end
 pd = plot(; title = "GMM data, N=$N", args...)
 for k in 1:K_true
     ik = labels_true .== k
-    scatter!(pd, X[1,ik], X[2,ik]; color = colors[k], label = "$k")
+    scatter!(pd, X[1,ik], X[2,ik]; color = colors[k],
+        label = latexstring("$k \\ w_$k = $(w_true[k])"),
+    )
 end
 plot_true!(pd)
 
 ## savefig(pd, "gmm1-data.pdf")
-
 
 #
 prompt()
@@ -207,7 +208,7 @@ end;
 
 #=
 Initialization.
-- Default (as in the python demo):
+- Default:
   equal weights,
   means at ``K`` randomly chosen data points,
   and covariances ``s I``,
@@ -240,13 +241,13 @@ end;
 
 #=
 Plot the current GMM estimate.
-Each data point is colored using its responsibilities
+Color each data point using its responsibilities
 as RGB values (for ``K=3``).
 =#
 function plot_gmm(X, w, μ, Σ, γ, iter)
     K = length(w)
     p = plot(; title = "EM for GMM, iteration $iter", args...,
-        legend = :bottomright)
+        legend = :topleft)
     if K == 3
         ## quantize colors: GR has a limited color table
         color = [RGB(round.(γ[:,n]; digits=1)...) for n in axes(γ, 2)]
@@ -254,7 +255,7 @@ function plot_gmm(X, w, μ, Σ, γ, iter)
     else
         scatter!(p, X[1,:], X[2,:]; color = :gray, alpha = 0.8)
     end
-    plot_true!(p)
+    plot_true!(p; extra = ": w=$w_true")
     wr = round.(w; digits = 3)
     for k in 1:K
         z = ellipse(μ[k], Σ[k])
@@ -321,14 +322,14 @@ pf = result.plots[end]
 ## savefig(pf, "gmm1-fit.pdf")
 
 
-# Estimated parameters:
-result.w
+# Estimated and parameters (of course the ordering can vary):
+[round.(result.w, digits=2) w_true]
 
 #
-result.μ
+[round.(hcat(result.μ...), digits=2) hcat(μ_true...)]
 
 #
-result.Σ
+round.([hcat(result.Σ...); hcat(Σ_true...)], digits=2)
 
 
 #=
@@ -347,7 +348,7 @@ The log-likelihood is non-decreasing,
 as guaranteed by EM theory.
 =#
 pl = plot(0:niter-1, result.loglik; marker = :circle,
-    xaxis = ("Iteration",),
+    xaxis = ("Iteration", 0:2:niter-1),
     yaxis = ("Log-likelihood",),
     title = "EM for GMM",
     size = (600, 400),
@@ -359,6 +360,3 @@ pl = plot(0:niter-1, result.loglik; marker = :circle,
 prompt()
 
 #src @assert all(diff(result.loglik) .≥ -1e-8) # EM monotonicity
-
-
-include("../../inc/reproduce.jl")
