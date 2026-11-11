@@ -14,7 +14,7 @@ The only "external" algorithm used is
 [k-means clustering](https://en.wikipedia.org/wiki/K-means_clustering)
 from
 [Clustering.jl](https://github.com/JuliaStats/Clustering.jl),
-for initializing the cluster centers.
+for (optionally) initializing the cluster centers.
 
 Adapted from a python demo used in earlier EECS 553 semesters.
 =#
@@ -51,12 +51,12 @@ end
 using Clustering: kmeans
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str
-using LinearAlgebra: cholesky, det, Symmetric
+using LinearAlgebra: cholesky, det, Symmetric, I
 using MIRTjim: jim, prompt
 using Plots: default, gui, savefig, RGB
 using Plots: plot, plot!, scatter!, Animation, frame, gif
-using Random: seed!
-using Statistics: mean
+using Random: randperm, seed!
+using Statistics: mean, std
 default(); default(markersize=3, markerstrokecolor=:auto, label="",
  tickfontsize=14, labelfontsize=16, legendfontsize=12, titlefontsize=16)
 
@@ -206,14 +206,27 @@ end;
 
 
 #=
-Initialization:
-use k-means to find initial cluster centers,
-then use the sample covariance and fraction of points
-in each k-means cluster
-for the initial covariances and weights.
+Initialization.
+- Default (as in the python demo):
+  equal weights,
+  means at ``K`` randomly chosen data points,
+  and covariances ``s I``,
+  where ``s`` is the sample standard deviation of all entries of ``X``.
+- With `use_kmeans = true`:
+  use k-means to find initial cluster centers,
+  then use the sample covariance and fraction of points
+  in each k-means cluster
+  for the initial covariances and weights.
 =#
-function init_gmm(X::AbstractMatrix, K::Int)
-    N = size(X, 2)
+function init_gmm(X::AbstractMatrix, K::Int; use_kmeans::Bool = false)
+    d, N = size(X)
+    if !use_kmeans
+        w = fill(1/K, K)
+        μ = [X[:,n] for n in randperm(N)[1:K]]
+        s = std(X) # mimic python demo
+        Σ = [s * Matrix(1.0I, d, d) for _ in 1:K]
+        return w, μ, Σ
+    end
     out = kmeans(X, K)
     μ = [out.centers[:,k] for k in 1:K]
     w = [count(==(k), out.assignments) / N for k in 1:K]
@@ -235,7 +248,8 @@ function plot_gmm(X, w, μ, Σ, γ, iter)
     p = plot(; title = "EM for GMM, iteration $iter", args...,
         legend = :bottomright)
     if K == 3
-        color = [RGB(γ[:,n]...) for n in axes(γ, 2)]
+        ## quantize colors: GR has a limited color table
+        color = [RGB(round.(γ[:,n]; digits=1)...) for n in axes(γ, 2)]
         scatter!(p, X[1,:], X[2,:]; color, alpha = 0.8)
     else
         scatter!(p, X[1,:], X[2,:]; color = :gray, alpha = 0.8)
@@ -254,9 +268,11 @@ end;
 
 
 # EM iterations, saving a plot of each iteration for animation:
-function em_gmm(X::AbstractMatrix, K::Int; niter::Int = 200, tol = 1e-3)
+function em_gmm(X::AbstractMatrix, K::Int;
+    niter::Int = 200, tol = 1e-3, use_kmeans::Bool = false,
+)
     N = size(X, 2)
-    w, μ, Σ = init_gmm(X, K)
+    w, μ, Σ = init_gmm(X, K; use_kmeans)
     γ = zeros(K, N)
     loglik = Float64[]
     plots = Any[]
@@ -292,9 +308,10 @@ end;
 #=
 ## Run EM
 =#
-seed!(3) # for k-means initialization
+seed!(3) # for random initialization
 K = 3
-result = em_gmm(X, K)
+use_kmeans = false # change to `true` for k-means initialization
+result = em_gmm(X, K; use_kmeans)
 niter = length(result.loglik)
 
 
