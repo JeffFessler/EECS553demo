@@ -3,6 +3,9 @@
 
 Illustrate
 [k-means clustering](https://en.wikipedia.org/wiki/K-means_clustering)
+and
+[Gaussian mixture model (GMM)](https://en.wikipedia.org/wiki/Mixture_model#Gaussian_mixture_model)
+clustering
 with MNIST hand-written digit images
 in Julia.
 =#
@@ -39,10 +42,10 @@ end
 using Clustering: kmeans
 using InteractiveUtils: versioninfo
 using LaTeXStrings: @L_str, latexstring
-using LinearAlgebra: svd, det
+using LinearAlgebra: svd, det, cholesky, Symmetric
 using MIRTjim: jim, prompt
 using MLDatasets: MNIST
-using Plots: default, gui, savefig, RGB, cgrad, twinx
+using Plots: default, gui, savefig, RGB, cgrad, twinx, Colorant
 using Plots: plot, plot!, scatter!, histogram!, contour!
 using Random: randperm, seed!
 using Statistics: mean
@@ -212,3 +215,110 @@ p13 = plot(
 )
 
 ## savefig(p13, "km$digit_str-center13.pdf")
+
+
+#=
+## GMM clustering
+
+Fit a GMM to the same 2D (PCA embedded) training data `X`
+using the
+[EM algorithm](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm),
+as in the [GMM demo](@ref gmm1),
+initialized using k-means.
+
+Adjust `nclust_gmm` to change the number of GMM clusters.
+=#
+nclust_gmm = 4 # number of GMM clusters (components)
+
+
+# Multivariate Gaussian pdf evaluated at each column of `X`:
+function gauss_pdf(X::AbstractMatrix, μ::AbstractVector, Σ::AbstractMatrix)
+    d = size(X, 1)
+    L = cholesky(Symmetric(Σ)).L
+    R = L \ (X .- μ) # whitened residuals
+    return vec(exp.(-sum(abs2, R; dims=1) / 2)) / sqrt((2π)^d * det(Σ))
+end;
+
+# EM for GMM, initialized by k-means:
+function em_gmm(X::AbstractMatrix, nc::Int; niter::Int = 500, tol = 1e-6)
+    d, N = size(X)
+    out = kmeans(X, nc)
+    μ = [out.centers[:,k] for k in 1:nc]
+    w = [count(==(k), out.assignments) / N for k in 1:nc]
+    Σ = map(1:nc) do k
+        Z = X[:, out.assignments .== k] .- μ[k]
+        Z * Z' / size(Z, 2)
+    end
+    γ = zeros(nc, N)
+    loglik = Float64[]
+    for iter in 1:niter
+        ## E-step
+        for k in 1:nc
+            γ[k,:] = w[k] * gauss_pdf(X, μ[k], Σ[k])
+        end
+        push!(loglik, sum(log, sum(γ; dims=1)))
+        γ ./= sum(γ; dims=1)
+        (iter > 1 && loglik[end] - loglik[end-1] < tol * abs(loglik[end])) &&
+            break
+        ## M-step
+        for k in 1:nc
+            Nk = sum(γ[k,:])
+            w[k] = Nk / N
+            μ[k] = X * γ[k,:] / Nk
+            Z = X .- μ[k]
+            Σ[k] = (Z .* γ[k,:]') * Z' / Nk
+        end
+    end
+    return (; w, μ, Σ, γ, loglik)
+end;
+
+# Ellipse containing probability mass `β` for a bivariate Gaussian:
+function ellipse(μ, Σ; β = 0.9, nt = 201)
+    r = sqrt(-2 * log(1 - β))
+    t = range(0, 2π, nt)
+    A = cholesky(Symmetric(Σ)).L
+    return μ .+ r * A * [cos.(t)'; sin.(t)'] # (2, nt)
+end;
+
+
+# Run EM:
+seed!(3)
+gmm = em_gmm(Float64.(X), nclust_gmm)
+length(gmm.loglik) # number of EM iterations
+
+
+#=
+Plot the fitted GMM.
+Each data point's color is the responsibility-weighted average
+of the cluster colors,
+so ambiguous points have blended colors.
+=#
+function plot_gmm(X, gmm; β = 0.9)
+    nc = length(gmm.w)
+    crgb = [RGB{Float64}(parse(Colorant, string(colors[k]))) for k in 1:nc]
+    ## quantize colors: GR has a limited color table
+    color = map(eachcol(gmm.γ)) do γn
+        c = sum(γn .* crgb)
+        RGB(round(c.r; digits=1), round(c.g; digits=1), round(c.b; digits=1))
+    end
+    p = plot(; title = "GMM K=$nc", args..., legend = :topleft)
+    scatter!(p, X[1,:], X[2,:]; color, alpha = 0.8)
+    for k in 1:nc
+        z = ellipse(gmm.μ[k], gmm.Σ[k]; β)
+        wk = round(gmm.w[k]; digits = 2)
+        plot!(p, z[1,:], z[2,:]; color = colors[k], linewidth = 2,
+            label = latexstring("w_$k = $wk"))
+        scatter!(p, [gmm.μ[k][1]], [gmm.μ[k][2]]; color = colors[k],
+            marker = :square, markersize = 5, markerstrokecolor = :black)
+    end
+    return p
+end;
+
+pg = plot_gmm(X, gmm)
+
+## savefig(pg, "km$digit_str-gmm-$nclust_gmm.pdf")
+
+#
+prompt()
+
+#src @assert all(diff(gmm.loglik) .≥ -1e-6 * abs(gmm.loglik[end])) # EM monotonicity
