@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="referrer" content="no-referrer"/><title>Clustering demo · EECS553demo</title><meta name="title" content="Clustering demo · EECS553demo"/><meta property="og:title" content="Clustering demo · EECS553demo"/><meta property="twitter:title" content="Clustering demo · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/cluster1/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/cluster1/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/cluster1/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../bayes-opt-ackley/">Bayesian Optimization</a></li><li class="is-active"><a class="tocitem" href>Clustering demo</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Load-data"><span>Load data</span></a></li><li><a class="tocitem" href="#PCA-based-dimensionality-reduction"><span>PCA-based dimensionality reduction</span></a></li><li><a class="tocitem" href="#Visualize-embedded-data"><span>Visualize embedded data</span></a></li><li><a class="tocitem" href="#Examine-some-cluster-centers"><span>Examine some cluster centers</span></a></li><li><a class="tocitem" href="#GMM-clustering"><span>GMM clustering</span></a></li></ul></li><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../eigendigit/">PCA for MNIST digits</a></li><li><a class="tocitem" href="../gmm1/">Gaussian mixture model</a></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../krr/">Kernel ridge regression</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../mlp3/">Multilayer perceptron (MLP) demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-house/">Linear regression of house prices</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li><a class="tocitem" href="../svm15/">SVM demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Clustering demo</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Clustering demo</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/cluster1.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="cluster1"><a class="docs-heading-anchor" href="#cluster1">Clustering demo</a><a id="cluster1-1"></a><a class="docs-heading-anchor-permalink" href="#cluster1" title="Permalink"></a></h1><p>Illustrate <a href="https://en.wikipedia.org/wiki/K-means_clustering">k-means clustering</a> and <a href="https://en.wikipedia.org/wiki/Mixture_model#Gaussian_mixture_model">Gaussian mixture model (GMM)</a> clustering with MNIST hand-written digit images in Julia.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/cluster1.jl"><code>cluster1.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/cluster1.ipynb"><code>cluster1.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/cluster1.ipynb"><code>cluster1.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;Clustering&quot;
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;MLDatasets&quot;
+        &quot;Plots&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using Clustering: kmeans
+using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: svd, det, cholesky, Symmetric
+using MIRTjim: jim, prompt
+using MLDatasets: MNIST
+using Plots: default, gui, savefig, RGB, cgrad, twinx, Colorant
+using Plots: plot, plot!, scatter!, histogram!, contour!
+using Random: randperm, seed!
+using Statistics: mean
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=16, titlefontsize=14)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Load-data"><a class="docs-heading-anchor" href="#Load-data">Load data</a><a id="Load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-data" title="Permalink"></a></h2><p>Read the MNIST data for some handwritten digits. This code will automatically download the data from web if needed and put it in a folder like: <code>~/.julia/datadeps/MNIST/</code>.</p><pre><code class="language-julia hljs">if !@isdefined(data) || true
+    if !@isdefined(digitn)
+        digitn = [0, 1, 7]
+    end
+    digit_str = join(digitn); # string for file names
+    isinteractive() || (ENV[&quot;DATADEPS_ALWAYS_ACCEPT&quot;] = true) # avoid prompt
+    dataset = MNIST(Float32, :train)
+    nrep = 1000 # how many of each digit
+    # function to extract the 1st `nrep` examples of digit n:
+    data = n -&gt; dataset.features[:,:,findall(==(n), dataset.targets)[1:nrep]]
+    data = cat(dims=4, data.(digitn)...)
+    labels = vcat([fill(d, nrep) for d in digitn]...) # to check later
+    nx, ny, nrep, ndigit = size(data)
+    data = data[:,2:ny,:,:] # make images non-square to force debug
+    ny = size(data,2)
+    size(data) # (nx, ny, nrep, ndigit)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(28, 27, 1000, 3)</code></pre><p>Look at some of the image data</p><pre><code class="language-julia hljs">pd = jim(data[:,:,1:10,:], &quot;Data, d=$(nx*ny), N=$(nrep*ndigit)&quot;;
+    colorbar = nothing, size = (600,200), tickfontsize = 6, ncol = 10)
+
+# savefig(pd, &quot;km$digit_str-digit.pdf&quot;)</code></pre><img src="f9c36399.svg" alt="Example block output"/><p>Partition data into train / validate / test</p><pre><code class="language-julia hljs">ntrain = 200
+nvalid = 100
+ntest1 = 600
+seed!(0)
+tmp = randperm(nrep)
+itrain = (1:ntrain)
+ivalid = (1:nvalid) .+ ntrain
+itest1 = (1:ntest1) .+ (ntrain + nvalid)
+dtrain = data[:,:,tmp[itrain],:]
+dvalid = data[:,:,tmp[ivalid],:]
+dtest1 = data[:,:,tmp[itest1],:];</code></pre><p>Sample mean of all training images:</p><pre><code class="language-julia hljs">dmean = sum(dtrain, dims = 3:4) / ntrain / ndigit
+pm = jim(dmean; title=&quot;Mean image&quot;)
+
+# savefig(pm, &quot;km$digit_str-mean.pdf&quot;)</code></pre><img src="ad98a9bd.svg" alt="Example block output"/><h2 id="PCA-based-dimensionality-reduction"><a class="docs-heading-anchor" href="#PCA-based-dimensionality-reduction">PCA-based dimensionality reduction</a><a id="PCA-based-dimensionality-reduction-1"></a><a class="docs-heading-anchor-permalink" href="#PCA-based-dimensionality-reduction" title="Permalink"></a></h2><p>Use two components for easy visualization</p><pre><code class="language-julia hljs">Xdemean = reshape(dtrain .- dmean, nx*ny, :) # unfold
+if !@isdefined(K)
+    K = 2
+end
+U = svd(Xdemean).U[:,1:K];</code></pre><p>Show basis vectors</p><pre><code class="language-julia hljs">tmp = reshape(U, nx, ny, K)
+pu = jim(tmp; nrow=1, title=&quot;Basis functions, K=$K&quot;, color = :bwr,
+    size = (700, K==2 ? 400 : 150), colorbar_ticks = [0])
+
+# savefig(pu, &quot;km$digit_str-basis-$K.pdf&quot;)</code></pre><img src="49b39a5b.svg" alt="Example block output"/><h2 id="Visualize-embedded-data"><a class="docs-heading-anchor" href="#Visualize-embedded-data">Visualize embedded data</a><a id="Visualize-embedded-data-1"></a><a class="docs-heading-anchor-permalink" href="#Visualize-embedded-data" title="Permalink"></a></h2><pre><code class="language-julia hljs">embed(data, n) = reshape(U&#39; * reshape(data .- dmean, nx*ny, :), K, n, :)
+Xtrain = embed(dtrain, ntrain) # (K, ntrain, ndigit)
+Xvalid = embed(dvalid, nvalid)
+Xtest1 = embed(dtest1, ntest1)
+labeler(n) = vcat([fill(digitn[id], n) for id in 1:ndigit]...)
+ytrain = labeler(ntrain)
+yvalid = labeler(nvalid)
+ytest1 = labeler(ntest1)
+
+xlim = (-9,6)
+ylim = (-6,8)
+args = (;
+    xaxis = (L&quot;x_1&quot;, xlim, -8:4:8),
+    yaxis = (L&quot;x_2&quot;, ylim, -8:4:8),
+    aspect_ratio = 1,
+    size = (550, 500),
+)
+
+petr = plot(; title = &quot;PC data&quot;, args...)
+
+colors = (:red, :green, :blue, :magenta, :orange)
+for id in 1:ndigit
+    scatter!(petr, Xtrain[1,:,id], Xtrain[2,:,id];
+        label = &quot;$(digitn[id])&quot;, color = colors[id])
+end
+
+X = reshape(Xtrain, K, ndigit * ntrain)
+petb = plot(; title = &quot;PC data&quot;, args...)
+scatter!(petb, X[1,:], X[2,:]; color = :black)
+pp = plot(petr, petb; size = (950, 500))</code></pre><img src="e13d7577.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()
+
+# savefig(pp, &quot;km$digit_str-embed.pdf&quot;)
+
+
+function plot_cluster(ncluster::Int; seed::Int = 3)
+    seed!(seed)
+    out = kmeans(X, ncluster)
+
+    p = plot(; title = &quot;K-means K=$ncluster&quot;, args...)
+    for k in 1:ncluster
+        isk = out.assignments .== k
+        scatter!(p, X[1,isk], X[2,isk];
+            label = &quot;$k&quot;, color = colors[k])
+        ck = out.centers[:,k]
+        scatter!(p, [ck[1]], [ck[2]]; markerstrokecolor = :black,
+            marker = :square, color = colors[k], markersize = 5,)
+    end
+    return p
+end
+
+p2 = plot_cluster(2)
+p3 = plot_cluster(3)
+p4 = plot_cluster(4)
+p5 = plot_cluster(5)
+
+pk = plot(p2, p3, p4, p5;
+    size = (950, 900),
+)
+
+# savefig(pk, &quot;km$digit_str-kmeans.pdf&quot;)</code></pre><img src="a056e443.svg" alt="Example block output"/><h2 id="Examine-some-cluster-centers"><a class="docs-heading-anchor" href="#Examine-some-cluster-centers">Examine some cluster centers</a><a id="Examine-some-cluster-centers-1"></a><a class="docs-heading-anchor-permalink" href="#Examine-some-cluster-centers" title="Permalink"></a></h2><pre><code class="language-julia hljs">seed!(3)
+out4 = kmeans(X, 4)
+i1 = argmin(vec(sum(abs2, out4.centers[:,1] .- X, dims=1)))
+i3 = argmin(vec(sum(abs2, out4.centers[:,3] .- X, dims=1)))
+i4 = argmin(vec(sum(abs2, out4.centers[:,4] .- X, dims=1)))
+p4c = jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i4])
+
+p13 = plot(
+ jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i1];
+  title = &quot;Centroid 1&quot;),
+ jim(reshape(dtrain, nx, ny, ndigit*ntrain)[:,:,i3];
+  title = &quot;Centroid 3&quot;),
+ size = (650, 300),
+)
+
+# savefig(p13, &quot;km$digit_str-center13.pdf&quot;)</code></pre><img src="7760e541.svg" alt="Example block output"/><h2 id="GMM-clustering"><a class="docs-heading-anchor" href="#GMM-clustering">GMM clustering</a><a id="GMM-clustering-1"></a><a class="docs-heading-anchor-permalink" href="#GMM-clustering" title="Permalink"></a></h2><p>Fit a GMM to the same 2D (PCA embedded) training data <code>X</code> using the <a href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">EM algorithm</a>, as in the <a href="../gmm1/#gmm1">GMM demo</a>, initialized using k-means.</p><p>Adjust <code>nclust_gmm</code> to change the number of GMM clusters.</p><pre><code class="language-julia hljs">nclust_gmm = 4 # number of GMM clusters (components)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4</code></pre><p>Multivariate Gaussian pdf evaluated at each column of <code>X</code>:</p><pre><code class="language-julia hljs">function gauss_pdf(X::AbstractMatrix, μ::AbstractVector, Σ::AbstractMatrix)
+    d = size(X, 1)
+    L = cholesky(Symmetric(Σ)).L
+    R = L \ (X .- μ) # whitened residuals
+    return vec(exp.(-sum(abs2, R; dims=1) / 2)) / sqrt((2π)^d * det(Σ))
+end;</code></pre><p>EM for GMM, initialized by k-means:</p><pre><code class="language-julia hljs">function em_gmm(X::AbstractMatrix, nc::Int; niter::Int = 500, tol = 1e-6)
+    d, N = size(X)
+    out = kmeans(X, nc)
+    μ = [out.centers[:,k] for k in 1:nc]
+    w = [count(==(k), out.assignments) / N for k in 1:nc]
+    Σ = map(1:nc) do k
+        Z = X[:, out.assignments .== k] .- μ[k]
+        Z * Z&#39; / size(Z, 2)
+    end
+    γ = zeros(nc, N)
+    loglik = Float64[]
+    for iter in 1:niter
+        # E-step
+        for k in 1:nc
+            γ[k,:] = w[k] * gauss_pdf(X, μ[k], Σ[k])
+        end
+        push!(loglik, sum(log, sum(γ; dims=1)))
+        γ ./= sum(γ; dims=1)
+        (iter &gt; 1 &amp;&amp; loglik[end] - loglik[end-1] &lt; tol * abs(loglik[end])) &amp;&amp;
+            break
+        # M-step
+        for k in 1:nc
+            Nk = sum(γ[k,:])
+            w[k] = Nk / N
+            μ[k] = X * γ[k,:] / Nk
+            Z = X .- μ[k]
+            Σ[k] = (Z .* γ[k,:]&#39;) * Z&#39; / Nk
+        end
+    end
+    return (; w, μ, Σ, γ, loglik)
+end;</code></pre><p>Ellipse containing probability mass <code>β</code> for a bivariate Gaussian:</p><pre><code class="language-julia hljs">function ellipse(μ, Σ; β = 0.9, nt = 201)
+    r = sqrt(-2 * log(1 - β))
+    t = range(0, 2π, nt)
+    A = cholesky(Symmetric(Σ)).L
+    return μ .+ r * A * [cos.(t)&#39;; sin.(t)&#39;] # (2, nt)
+end;</code></pre><p>Run EM:</p><pre><code class="language-julia hljs">seed!(3)
+gmm = em_gmm(Float64.(X), nclust_gmm)
+length(gmm.loglik) # number of EM iterations</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">24</code></pre><p>Plot the fitted GMM. Each data point&#39;s color is the responsibility-weighted average of the cluster colors, so ambiguous points have blended colors.</p><pre><code class="language-julia hljs">function plot_gmm(X, gmm; β = 0.9)
+    nc = length(gmm.w)
+    crgb = [RGB{Float64}(parse(Colorant, string(colors[k]))) for k in 1:nc]
+    # quantize colors: GR has a limited color table
+    color = map(eachcol(gmm.γ)) do γn
+        c = sum(γn .* crgb)
+        RGB(round(c.r; digits=1), round(c.g; digits=1), round(c.b; digits=1))
+    end
+    p = plot(; title = &quot;GMM K=$nc&quot;, args..., legend = :topleft)
+    scatter!(p, X[1,:], X[2,:]; color, alpha = 0.8)
+    for k in 1:nc
+        z = ellipse(gmm.μ[k], gmm.Σ[k]; β)
+        wk = round(gmm.w[k]; digits = 2)
+        plot!(p, z[1,:], z[2,:]; color = colors[k], linewidth = 2,
+            label = latexstring(&quot;w_$k = $wk&quot;))
+        scatter!(p, [gmm.μ[k][1]], [gmm.μ[k][2]]; color = colors[k],
+            marker = :square, markersize = 5, markerstrokecolor = :black)
+    end
+    return p
+end;
+
+pg = plot_gmm(X, gmm)
+
+# savefig(pg, &quot;km$digit_str-gmm-$nclust_gmm.pdf&quot;)</code></pre><img src="e456c5a1.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bayes-opt-ackley/">« Bayesian Optimization</a><a class="docs-footer-nextpage" href="../decision-boundary/">Decision boundaries »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Thursday 12 November 2026 18:33">Thursday 12 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="referrer" content="no-referrer"/><title>Gaussian mixture model · EECS553demo</title><meta name="title" content="Gaussian mixture model · EECS553demo"/><meta property="og:title" content="Gaussian mixture model · EECS553demo"/><meta property="twitter:title" content="Gaussian mixture model · EECS553demo"/><meta name="description" content="Documentation for EECS553demo."/><meta property="og:description" content="Documentation for EECS553demo."/><meta property="twitter:description" content="Documentation for EECS553demo."/><meta property="og:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/gmm1/"/><meta property="twitter:url" content="https://JeffFessler.github.io/EECS553demo/generated/examples/gmm1/"/><link rel="canonical" href="https://JeffFessler.github.io/EECS553demo/generated/examples/gmm1/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script><link href="../../../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">EECS553demo</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../bayes-opt-ackley/">Bayesian Optimization</a></li><li><a class="tocitem" href="../cluster1/">Clustering demo</a></li><li><a class="tocitem" href="../decision-boundary/">Decision boundaries</a></li><li><a class="tocitem" href="../eigendigit/">PCA for MNIST digits</a></li><li class="is-active"><a class="tocitem" href>Gaussian mixture model</a><ul class="internal"><li><a class="tocitem" href="#Setup"><span>Setup</span></a></li><li><a class="tocitem" href="#Generative-model"><span>Generative model</span></a></li><li><a class="tocitem" href="#Ellipse-for-plotting"><span>Ellipse for plotting</span></a></li><li><a class="tocitem" href="#Plot-the-data-and-the-true-model"><span>Plot the data and the true model</span></a></li><li><a class="tocitem" href="#EM-algorithm-for-GMM"><span>EM algorithm for GMM</span></a></li><li><a class="tocitem" href="#Run-EM"><span>Run EM</span></a></li><li><a class="tocitem" href="#Animation-of-EM-iterations"><span>Animation of EM iterations</span></a></li><li><a class="tocitem" href="#Log-likelihood-vs-iteration"><span>Log-likelihood vs iteration</span></a></li></ul></li><li><a class="tocitem" href="../hard-margin/">Illustrate hard margin constraint sets</a></li><li><a class="tocitem" href="../k-nn/">k-NN (k Nearest Neighbor) classifier demo</a></li><li><a class="tocitem" href="../krr/">Kernel ridge regression</a></li><li><a class="tocitem" href="../lda47/">LDA demo</a></li><li><a class="tocitem" href="../logistic-multi/">Multinomial logistic regression demo</a></li><li><a class="tocitem" href="../logistic-sparse/">Sparse logistic regression with POGM</a></li><li><a class="tocitem" href="../logistic17/">Logistic regression demo</a></li><li><a class="tocitem" href="../mlp3/">Multilayer perceptron (MLP) demo</a></li><li><a class="tocitem" href="../qda17/">QDA demo</a></li><li><a class="tocitem" href="../regress-house/">Linear regression of house prices</a></li><li><a class="tocitem" href="../regress-mmse/">MMSE regression and SAT scores</a></li><li><a class="tocitem" href="../svm15/">SVM demo</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Gaussian mixture model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Gaussian mixture model</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/gmm1.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="gmm1"><a class="docs-heading-anchor" href="#gmm1">Gaussian mixture model</a><a id="gmm1-1"></a><a class="docs-heading-anchor-permalink" href="#gmm1" title="Permalink"></a></h1><p>Illustrate fitting a <a href="https://en.wikipedia.org/wiki/Mixture_model#Gaussian_mixture_model">Gaussian mixture model (GMM)</a> to 2D data using the <a href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">expectation-maximization (EM) algorithm</a> in Julia.</p><p>The EM iterations are implemented directly here, without using any GMM fitting package. The only &quot;external&quot; algorithm used is <a href="https://en.wikipedia.org/wiki/K-means_clustering">k-means clustering</a> from <a href="https://github.com/JuliaStats/Clustering.jl">Clustering.jl</a>, for (optionally) initializing the cluster centers.</p><p>Adapted from a python demo used in earlier EECS 553 semesters.</p><p>This page comes from a single Julia file: <a href="https://github.com/JeffFessler/EECS553demo/blob/main/docs/lit/examples/gmm1.jl"><code>gmm1.jl</code></a>.</p><p>You can access the source code for such Julia documentation using the &#39;Edit on GitHub&#39; link in the top right. You can view the corresponding notebook in <a href="https://nbviewer.org/">nbviewer</a> here: <a href="https://nbviewer.org/github/JeffFessler/EECS553demo/tree/gh-pages/generated/examples/gmm1.ipynb"><code>gmm1.ipynb</code></a>, or open it in <a href="https://mybinder.org/">binder</a> here: <a href="https://mybinder.org/v2/gh/JeffFessler/EECS553demo/gh-pages?filepath=generated/examples/gmm1.ipynb"><code>gmm1.ipynb</code></a>.</p><h2 id="Setup"><a class="docs-heading-anchor" href="#Setup">Setup</a><a id="Setup-1"></a><a class="docs-heading-anchor-permalink" href="#Setup" title="Permalink"></a></h2><p>Add the Julia packages used in this demo. Change <code>false</code> to <code>true</code> in the following code block if you are using any of the following packages for the first time.</p><pre><code class="language-julia hljs">if false
+    import Pkg
+    Pkg.add([
+        &quot;Clustering&quot;
+        &quot;InteractiveUtils&quot;
+        &quot;LaTeXStrings&quot;
+        &quot;LinearAlgebra&quot;
+        &quot;MIRTjim&quot;
+        &quot;Plots&quot;
+        &quot;Random&quot;
+        &quot;Statistics&quot;
+    ])
+end</code></pre><p>Tell Julia to use the following packages. Run <code>Pkg.add()</code> in the preceding code block first, if needed.</p><pre><code class="language-julia hljs">using Clustering: kmeans
+using InteractiveUtils: versioninfo
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: cholesky, det, Symmetric, I
+using MIRTjim: jim, prompt
+using Plots: default, gui, savefig, RGB
+using Plots: plot, plot!, scatter!, Animation, frame, gif
+using Random: randperm, seed!
+using Statistics: mean, std
+default(); default(markersize=3, markerstrokecolor=:auto, label=&quot;&quot;,
+ tickfontsize=14, labelfontsize=16, legendfontsize=12, titlefontsize=16)</code></pre><p>The following line is helpful when running this file as a script; this way it will prompt user to hit a key after each figure is displayed.</p><pre><code class="language-julia hljs">isinteractive() ? jim(:prompt, true) : prompt(:draw);</code></pre><h2 id="Generative-model"><a class="docs-heading-anchor" href="#Generative-model">Generative model</a><a id="Generative-model-1"></a><a class="docs-heading-anchor-permalink" href="#Generative-model" title="Permalink"></a></h2><p>A mixture of <span>$K=3$</span> Gaussian components in 2D, with mixing weights <span>$w_k$</span>, means <span>$μ_k$</span>, and covariance matrices <span>$Σ_k$</span>:</p><p><span>$p(x) = \sum_{k=1}^K w_k \, N(x; μ_k, Σ_k).$</span></p><pre><code class="language-julia hljs">rot(θ) = [cos(θ) -sin(θ); sin(θ) cos(θ)] # 2D rotation matrix
+
+w_true = [0.3, 0.4, 0.3]
+μ_true = [[0, 2], [1, -3], [5, 0]]
+Σ_true = [
+    rot(π/8) * [5 0; 0 0.1] * rot(π/8)&#39;,
+    rot(3π/4) * [3 0; 0 0.5] * rot(3π/4)&#39;,
+    [1 0; 0 4.],
+]
+K_true = length(w_true);</code></pre><p>To draw a sample from <span>$N(μ, Σ)$</span>, use <span>$x = μ + A z$</span> where <span>$Σ = A A&#39;$</span> (here <span>$A$</span> is the Cholesky factor) and <span>$z$</span> has iid <span>$N(0,1)$</span> entries.</p><p>To draw a sample from the mixture, first pick a component <span>$k$</span> at random with probabilities <span>$w_k$</span>, then draw <span>$x$</span> from that component.</p><pre><code class="language-julia hljs">function gen_gmm(N::Int, w, μ, Σ)
+    A = [cholesky(Symmetric(Σk)).L for Σk in Σ]
+    cw = cumsum(w)
+    labels = [findfirst(&gt;(rand()), cw) for _ in 1:N] # random components
+    X = stack(μ[k] + A[k] * randn(2) for k in labels) # (2, N)
+    return X, labels
+end
+
+seed!(0)
+N = 500
+X, labels_true = gen_gmm(N, w_true, μ_true, Σ_true)
+size(X)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(2, 500)</code></pre><h2 id="Ellipse-for-plotting"><a class="docs-heading-anchor" href="#Ellipse-for-plotting">Ellipse for plotting</a><a id="Ellipse-for-plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Ellipse-for-plotting" title="Permalink"></a></h2><p>For a bivariate Gaussian, the squared Mahalanobis distance <span>$(x-μ)&#39; Σ^{-1} (x-μ)$</span> has a <span>$χ^2$</span> distribution with 2 degrees of freedom, whose CDF is <span>$1 - \exp(-r^2/2)$</span>. So the ellipse containing probability mass <span>$β$</span> has <span>$r^2 = -2 \log(1-β)$</span>.</p><pre><code class="language-julia hljs">function ellipse(μ, Σ; β = 0.9, nt = 201)
+    r = sqrt(-2 * log(1 - β))
+    t = range(0, 2π, nt)
+    A = cholesky(Symmetric(Σ)).L
+    return μ .+ r * A * [cos.(t)&#39;; sin.(t)&#39;] # (2, nt)
+end;</code></pre><h2 id="Plot-the-data-and-the-true-model"><a class="docs-heading-anchor" href="#Plot-the-data-and-the-true-model">Plot the data and the true model</a><a id="Plot-the-data-and-the-true-model-1"></a><a class="docs-heading-anchor-permalink" href="#Plot-the-data-and-the-true-model" title="Permalink"></a></h2><pre><code class="language-julia hljs">xlim = (-6, 9)
+ylim = (-8, 7)
+args = (;
+    xaxis = (L&quot;x_1&quot;, xlim, -6:3:9),
+    yaxis = (L&quot;x_2&quot;, ylim, -6:3:6),
+    aspect_ratio = 1,
+    size = (600, 600),
+)
+
+colors = (:red, :green, :blue, :magenta, :orange)
+
+function plot_true!(p; μ = μ_true, Σ = Σ_true, extra::String = &quot;&quot;)
+    for k in eachindex(μ)
+        z = ellipse(μ[k], Σ[k])
+        plot!(p, z[1,:], z[2,:]; color = :black, linestyle = :dash,
+            linewidth = 2, label = (k == 1 ? &quot;true model$extra&quot; : &quot;&quot;))
+    end
+    return p
+end
+
+pd = plot(; title = &quot;GMM data, N=$N&quot;, args...)
+for k in 1:K_true
+    ik = labels_true .== k
+    scatter!(pd, X[1,ik], X[2,ik]; color = colors[k],
+        label = latexstring(&quot;$k \\ w_$k = $(w_true[k])&quot;),
+    )
+end
+plot_true!(pd)
+
+# savefig(pd, &quot;gmm1-data.pdf&quot;)</code></pre><img src="d6a67523.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><h2 id="EM-algorithm-for-GMM"><a class="docs-heading-anchor" href="#EM-algorithm-for-GMM">EM algorithm for GMM</a><a id="EM-algorithm-for-GMM-1"></a><a class="docs-heading-anchor-permalink" href="#EM-algorithm-for-GMM" title="Permalink"></a></h2><p>Given the current parameter estimates, the <strong>E-step</strong> computes the &quot;responsibilities&quot; (posterior probabilities of each component for each sample):</p><p><span>$γ_{k,n} = \frac{w_k \, N(x_n; μ_k, Σ_k)}{\sum_{j=1}^K w_j \, N(x_n; μ_j, Σ_j)}.$</span></p><p>The <strong>M-step</strong> then updates the parameters using these soft assignments:</p><p><span>$N_k = \sum_{n=1}^N γ_{k,n}, \quad w_k = N_k / N, \quad μ_k = \frac{1}{N_k} \sum_{n=1}^N γ_{k,n} x_n, \quad Σ_k = \frac{1}{N_k} \sum_{n=1}^N γ_{k,n} (x_n - μ_k)(x_n - μ_k)&#39;.$</span></p><p>Each EM iteration is guaranteed not to decrease the log-likelihood <span>$\sum_{n=1}^N \log \left( \sum_{k=1}^K w_k \, N(x_n; μ_k, Σ_k) \right).$</span></p><p>Multivariate Gaussian pdf evaluated at each column of <code>X</code>:</p><pre><code class="language-julia hljs">function gauss_pdf(X::AbstractMatrix, μ::AbstractVector, Σ::AbstractMatrix)
+    d = size(X, 1)
+    L = cholesky(Symmetric(Σ)).L
+    R = L \ (X .- μ) # whitened residuals
+    return vec(exp.(-sum(abs2, R; dims=1) / 2)) / sqrt((2π)^d * det(Σ))
+end;</code></pre><p>Initialization.</p><ul><li>Default: equal weights, means at <span>$K$</span> randomly chosen data points, and covariances <span>$s I$</span>, where <span>$s$</span> is the sample standard deviation of all entries of <span>$X$</span>.</li><li>With <code>use_kmeans = true</code>: use k-means to find initial cluster centers, then use the sample covariance and fraction of points in each k-means cluster for the initial covariances and weights.</li></ul><pre><code class="language-julia hljs">function init_gmm(X::AbstractMatrix, K::Int; use_kmeans::Bool = false)
+    d, N = size(X)
+    if !use_kmeans
+        w = fill(1/K, K)
+        μ = [X[:,n] for n in randperm(N)[1:K]]
+        s = std(X) # mimic python demo
+        Σ = [s * Matrix(1.0I, d, d) for _ in 1:K]
+        return w, μ, Σ
+    end
+    out = kmeans(X, K)
+    μ = [out.centers[:,k] for k in 1:K]
+    w = [count(==(k), out.assignments) / N for k in 1:K]
+    Σ = map(1:K) do k
+        Z = X[:, out.assignments .== k] .- μ[k]
+        Z * Z&#39; / size(Z, 2)
+    end
+    return w, μ, Σ
+end;</code></pre><p>Plot the current GMM estimate. Color each data point using its responsibilities as RGB values (for <span>$K=3$</span>).</p><pre><code class="language-julia hljs">function plot_gmm(X, w, μ, Σ, γ, iter)
+    K = length(w)
+    p = plot(; title = &quot;EM for GMM, iteration $iter&quot;, args...,
+        legend = :topleft)
+    if K == 3
+        # quantize colors: GR has a limited color table
+        color = [RGB(round.(γ[:,n]; digits=1)...) for n in axes(γ, 2)]
+        scatter!(p, X[1,:], X[2,:]; color, alpha = 0.8)
+    else
+        scatter!(p, X[1,:], X[2,:]; color = :gray, alpha = 0.8)
+    end
+    plot_true!(p; extra = &quot;: w=$w_true&quot;)
+    wr = round.(w; digits = 3)
+    for k in 1:K
+        z = ellipse(μ[k], Σ[k])
+        plot!(p, z[1,:], z[2,:]; color = colors[k], linewidth = 2,
+            label = (k == 1 ? &quot;fit: w=$wr&quot; : &quot;&quot;))
+        scatter!(p, [μ[k][1]], [μ[k][2]]; color = colors[k],
+            marker = :square, markersize = 5, markerstrokecolor = :black)
+    end
+    return p
+end;</code></pre><p>EM iterations, saving a plot of each iteration for animation:</p><pre><code class="language-julia hljs">function em_gmm(X::AbstractMatrix, K::Int;
+    niter::Int = 200, tol = 1e-3, use_kmeans::Bool = false,
+)
+    N = size(X, 2)
+    w, μ, Σ = init_gmm(X, K; use_kmeans)
+    γ = zeros(K, N)
+    loglik = Float64[]
+    plots = Any[]
+
+    for iter in 1:niter
+        # E-step
+        for k in 1:K
+            γ[k,:] = w[k] * gauss_pdf(X, μ[k], Σ[k])
+        end
+        push!(loglik, sum(log, sum(γ; dims=1))) # for current parameters
+        γ ./= sum(γ; dims=1)
+
+        push!(plots, plot_gmm(X, w, μ, Σ, γ, iter-1))
+
+        # M-step
+        for k in 1:K
+            Nk = sum(γ[k,:])
+            w[k] = Nk / N
+            μ[k] = X * γ[k,:] / Nk
+            Z = X .- μ[k]
+            Σ[k] = (Z .* γ[k,:]&#39;) * Z&#39; / Nk
+        end
+
+        if iter &gt; 1 &amp;&amp; loglik[end] - loglik[end-1] &lt; tol
+            break
+        end
+    end
+
+    return (; w, μ, Σ, γ, loglik, plots)
+end;</code></pre><h2 id="Run-EM"><a class="docs-heading-anchor" href="#Run-EM">Run EM</a><a id="Run-EM-1"></a><a class="docs-heading-anchor-permalink" href="#Run-EM" title="Permalink"></a></h2><pre><code class="language-julia hljs">seed!(3) # for random initialization
+K = 3
+use_kmeans = false # change to `true` for k-means initialization
+result = em_gmm(X, K; use_kmeans)
+niter = length(result.loglik)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">13</code></pre><p>Final GMM fit:</p><pre><code class="language-julia hljs">pf = result.plots[end]
+
+# savefig(pf, &quot;gmm1-fit.pdf&quot;)</code></pre><img src="cf8df54d.svg" alt="Example block output"/><p>Estimated and parameters (of course the ordering can vary):</p><pre><code class="language-julia hljs">[round.(result.w, digits=2) w_true]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×2 Matrix{Float64}:
+ 0.38  0.3
+ 0.28  0.4
+ 0.34  0.3</code></pre><pre><code class="language-julia hljs">[round.(hcat(result.μ...), digits=2) hcat(μ_true...)]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">2×6 Matrix{Float64}:
+  1.03   4.84  -0.02  0.0   1.0  5.0
+ -3.07  -0.15   1.99  2.0  -3.0  0.0</code></pre><pre><code class="language-julia hljs">round.([hcat(result.Σ...); hcat(Σ_true...)], digits=2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">4×6 Matrix{Float64}:
+  1.29  -0.94   1.13   0.1   4.36  1.74
+ -0.94   1.46   0.1    3.67  1.74  0.83
+  4.28   1.73   1.75  -1.25  1.0   0.0
+  1.73   0.82  -1.25   1.75  0.0   4.0</code></pre><h2 id="Animation-of-EM-iterations"><a class="docs-heading-anchor" href="#Animation-of-EM-iterations">Animation of EM iterations</a><a id="Animation-of-EM-iterations-1"></a><a class="docs-heading-anchor-permalink" href="#Animation-of-EM-iterations" title="Permalink"></a></h2><pre><code class="language-julia hljs">anim = Animation()
+for p in result.plots
+    frame(anim, p)
+end
+gif(anim, &quot;gmm1.gif&quot;; fps = 2)</code></pre><img src="38888e55.gif" alt="Example block output"/><h2 id="Log-likelihood-vs-iteration"><a class="docs-heading-anchor" href="#Log-likelihood-vs-iteration">Log-likelihood vs iteration</a><a id="Log-likelihood-vs-iteration-1"></a><a class="docs-heading-anchor-permalink" href="#Log-likelihood-vs-iteration" title="Permalink"></a></h2><p>The log-likelihood is non-decreasing, as guaranteed by EM theory.</p><pre><code class="language-julia hljs">pl = plot(0:niter-1, result.loglik; marker = :circle,
+    xaxis = (&quot;Iteration&quot;, 0:2:niter-1),
+    yaxis = (&quot;Log-likelihood&quot;,),
+    title = &quot;EM for GMM&quot;,
+    size = (600, 400),
+)
+
+# savefig(pl, &quot;gmm1-loglik.pdf&quot;)</code></pre><img src="84dd96be.svg" alt="Example block output"/><pre><code class="language-julia hljs">prompt()</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../eigendigit/">« PCA for MNIST digits</a><a class="docs-footer-nextpage" href="../hard-margin/">Illustrate hard margin constraint sets »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Thursday 12 November 2026 18:34">Thursday 12 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
