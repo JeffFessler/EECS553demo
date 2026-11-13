@@ -11,6 +11,9 @@ at the University of Michigan.
 
 Click the "Demo" button.
 
+## Related sites
+- https://github.com/JuliaAI/DataScienceTutorials.jl
+- https://github.com/jddeng/MLwJulia
 
 <!-- URLs -->
 [docs-img]: https://img.shields.io/badge/Demo-blue.svg
