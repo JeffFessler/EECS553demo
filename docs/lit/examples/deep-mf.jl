@@ -82,10 +82,10 @@ where ``λ ≥ 0`` is the weight decay parameter.
 seed!(0)
 n, depth, rank = 30, 3, 3
 nstep = 30
-save_steps = 0:3:nstep
+save_steps = 0:nstep # save every iteration
 η = 1.0 # step size
-if !@isdefined(λ) || true
-    λ = 0.02 # weight decay for the 2nd run
+if !@isdefined(λ)
+    λ = 0.005 # weight decay for the 2nd run
 end
 
 
@@ -138,7 +138,7 @@ Singular vectors are defined only up to sign
 (and up to rotation within repeated singular values,
 which is the case here because the initial factor is orthogonal),
 so first align them with an orthogonal Procrustes rotation,
-as in the original code.
+as in the original python code.
 =#
 function svd_series(Ws)
     F0 = svd(Ws[1])
@@ -160,40 +160,48 @@ end;
 ## Plotting functions
 
 Images of the singular value and angle arrays:
-each image shows a ``n × T`` array,
-with the singular value index ``i`` along the horizontal axis
-and the iteration ``t`` along the vertical axis.
+each image shows a ``T × n`` array,
+with the iteration ``t`` along the horizontal axis
+and the singular value index ``i`` along the vertical axis.
 =#
 titles = ["Singular values", "Right singular vectors", "Left singular vectors"]
 clabels = [L"\sigma_i(t)", L"\angle(v_i(t), v_i(0))", L"\angle(u_i(t), u_i(0))"]
+ulabels = ["σᵢ(t)", "∠(vᵢ(t), vᵢ(0))", "∠(uᵢ(t), uᵢ(0))"] # unicode for jim titles
 
 function plot_jim(series, λ)
     pj = map(1:3) do j
-        jim(0:n-1, save_steps, series[j], titles[j] * ", λ = $λ";
-            xlabel = L"SV index $i$", ylabel = L"Iteration $t$",
-            yflip = false, aspect_ratio = :auto, color = :cividis,
-            colorbar_title = clabels[j], prompt = false,
-            xticks = 0:10:n-1, yticks = 0:6:nstep,
+        jim(save_steps, 1:n, series[j]', titles[j] * " " * ulabels[j] * ", λ = $λ";
+            xlabel = L"Iteration $t$", ylabel = L"SV index $i$",
+            yflip = true, aspect_ratio = :auto, color = :cividis,
+            prompt = false, xticks = 0:3:nstep, yticks = [1; 5:5:n],
         )
     end
-    return plot(pj...; layout = (1, 3), size = (1600, 450),
-        left_margin = 8Plots.mm, right_margin = 8Plots.mm, bottom_margin = 10Plots.mm)
+    return plot(pj...; layout = (3, 1), size = (800, 1000),
+        left_margin = 5Plots.mm, right_margin = 5Plots.mm)
 end;
 
 # Same information as line plots,
-# with one curve per saved iteration:
+# with one curve per singular value index ``i`` showing its evolution over iterations.
+# Only some of the more interesting indices are labeled in the legend.
+ilabel = [1:3; n÷2; n÷2+1; n-2:n] # first 3, middle 2, last 3
+
 function plot_lines(series, λ)
-    colors = cgrad(:cividis, length(save_steps), categorical=true)
+    colors = cgrad(:darktest, length(ilabel), categorical=true) # for labeled curves
     p2 = map(1:3) do j
-        p = plot(; xlabel = L"SV index $i$", ylabel = clabels[j],
-            title = titles[j] * ", λ = $λ", legend = j == 2 ? :top : false)
-        for (k, t) in enumerate(save_steps)
-            plot!(p, 0:n-1, series[j][:, k]; color = colors[k], label = "Iteration $t")
+        p = plot(; xlabel = L"Iteration $t$", ylabel = clabels[j],
+            xticks = 0:3:nstep, title = titles[j] * ", λ = $λ",
+            legend = j == 1 ? :topleft : false, legend_columns = 2)
+        for i in 1:n # unlabeled curves in light gray, underneath
+            i in ilabel || plot!(p, save_steps, series[j][i, :]; color = :gray, alpha = 0.4)
+        end
+        for (k, i) in enumerate(ilabel)
+            plot!(p, save_steps, series[j][i, :]; color = colors[k],
+                linewidth = 2, label = "i = $i")
         end
         p
     end
-    return plot(p2...; layout = (1, 3), size = (1500, 450),
-        left_margin = 10Plots.mm, bottom_margin = 10Plots.mm)
+    return plot(p2...; layout = (3, 1), size = (800, 1000),
+        left_margin = 5Plots.mm)
 end;
 
 
@@ -211,9 +219,9 @@ the other singular values and singular vectors
 stay (nearly) fixed at their initial values.
 This is the low-dimensional subspace structure of the learning dynamics.
 =#
-pjim0 = plot_jim(series0, 0)
+pj0 = plot_jim(series0, 0)
 
-#src savefig(pjim0, "deep-mf-jim-0.pdf")
+#src savefig(pj0, "deep-mf-jim-0.pdf")
 
 #
 prompt()
@@ -241,9 +249,9 @@ Now all singular values of ``W_1`` shrink,
 but the 3 singular values associated with the rank-3 target
 shrink less than the others.
 =#
-pjim1 = plot_jim(series1, λ)
+pj1 = plot_jim(series1, λ)
 
-#src savefig(pjim1, "deep-mf-jim-$λ.pdf")
+#src savefig(pj1, "deep-mf-jim-$λ.pdf")
 
 #
 prompt()
@@ -262,7 +270,7 @@ prompt()
 
 Data-fit loss versus iteration for both runs:
 =#
-pl = plot(; xaxis = ("Iteration", (0,nstep), save_steps),
+pl = plot(; xaxis = ("Iteration", (0,nstep), 0:3:nstep),
     yaxis = ("Loss",), title = "GD for deep MF", size = (600, 400))
 plot!(pl, 0:nstep, loss_history0; marker = :circle, label = "λ = 0")
 plot!(pl, 0:nstep, loss_history1; marker = :square, label = "λ = $λ")
