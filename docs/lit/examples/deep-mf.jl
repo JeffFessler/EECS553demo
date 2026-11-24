@@ -12,9 +12,8 @@ L. Balzano, T. Ding, B. D. Haeffele, S. M. Kwon, Q. Qu, P. Wang, Z. Wang, C. Yar
 IEEE Signal Processing Magazine, 43(3):52-70, 2026.
 The original Python/JAX code is at
 [github.com/girasole/SPM-LowRankDeepLearning](https://github.com/girasole/SPM-LowRankDeepLearning).
-Here we use
-[ForwardDiff](https://github.com/JuliaDiff/ForwardDiff.jl)
-for the gradients
+Here we use the analytical expression for the gradient
+(instead of automatic differentiation)
 and we include optional weight decay.
 =#
 
@@ -32,7 +31,6 @@ if you are using any of the following packages for the first time.
 if false
     import Pkg
     Pkg.add([
-        "ForwardDiff"
         "LaTeXStrings"
         "LinearAlgebra"
         "MIRTjim"
@@ -45,13 +43,12 @@ end
 # Tell Julia to use the following packages.
 # Run `Pkg.add()` in the preceding code block first, if needed.
 
-using ForwardDiff: gradient
-using LaTeXStrings: @L_str
-using LinearAlgebra: svd, qr, Diagonal, diag
+using LaTeXStrings: @L_str, latexstring
+using LinearAlgebra: svd, qr, Diagonal, diag, I
 using MIRTjim: jim, prompt
 using Plots: Plots, default, gui, savefig, cgrad, plot, plot!
 using Random: seed!
-default(); default(label="",
+default(); default(label="", markerstrokecolor = :auto,
  tickfontsize=14, labelfontsize=16, legendfontsize=12, titlefontsize=16,
  colorbar_tickfontsize = 10, colorbar_titlefontsize = 14)
 
@@ -104,26 +101,47 @@ s[1:rank]
 #=
 ## Gradient descent
 
-Store all ``L`` factors as one vector ``θ``
-so that `ForwardDiff.gradient` applies directly.
+Store the ``L`` factors as a vector of matrices
+`Ws = [W_1, W_2, …, W_L]`.
 =#
-layers(θ) = [reshape(view(θ, (l-1)*n^2+1:l*n^2), n, n) for l in 1:depth] # unvec
-model(θ) = foldl((A, W) -> W * A, layers(θ)) # W3 * W2 * W1
-loss(θ) = sum(abs2, model(θ) - Y) / 2 / length(Y); # data-fit term
+model(Ws) = foldl((A, W) -> W * A, Ws) # W3 * W2 * W1
+loss(Ws) = sum(abs2, model(Ws) - Y) / 2 / length(Y); # data-fit term
+
+#=
+Defining the scaled residual
+``R = (W_L ⋯ W_1 - Y) / n^2``,
+the gradient of the data-fit term
+with respect to the ``l``th factor is
+```math
+∇_{W_l} f = (W_L ⋯ W_{l+1})' \, R \, (W_{l-1} ⋯ W_1)',
+```
+where an empty product is the identity matrix.
+=#
+function grad(Ws)
+    R = (model(Ws) - Y) / length(Y)
+    return map(1:depth) do l
+        A = prod(reverse(Ws[l+1:end]); init = I) # W_L ⋯ W_{l+1}
+        B = prod(reverse(Ws[1:l-1]); init = I) # W_{l-1} ⋯ W_1
+        A' * R * B'
+    end
+end;
 
 # Random orthogonal initialization,
 # shared by all runs so that they are comparable:
-θ0 = vcat([vec(rand_orth(n)) for _ in 1:depth]...);
+Ws0 = [rand_orth(n) for _ in 1:depth];
 
 # Function to run GD with weight decay ``λ``,
-# saving the first factor ``W_1`` after selected iterations:
-function run_gd(λ::Real; θ = copy(θ0))
+# saving the first factor ``W_1`` at selected iterations,
+# where iteration 0 is the initialization:
+function run_gd(λ::Real; Ws = copy.(Ws0))
     W1_history = Matrix{Float64}[]
     loss_history = zeros(nstep+1)
     for step in 0:nstep
-        θ -= η * (gradient(loss, θ) + λ * θ) # θ ← (1-ηλ)θ - η ∇loss(θ)
-        step in save_steps && push!(W1_history, copy(layers(θ)[1]))
-        loss_history[step+1] = loss(θ)
+        step in save_steps && push!(W1_history, copy(Ws[1]))
+        loss_history[step+1] = loss(Ws)
+        step == nstep && break
+        G = grad(Ws)
+        Ws = [(1 - η*λ) * W - η * g for (W, g) in zip(Ws, G)] # W ← (1-ηλ)W - η ∇f
     end
     return W1_history, loss_history
 end;
@@ -133,15 +151,24 @@ end;
 ## Singular value decomposition of ``W_1`` over iterations
 
 Compute the singular values of ``W_1(t)``
-and the angles between its singular vectors and those of ``W_1(0)``.
+and the angles between its singular vectors and those of ``W_1(1)``.
+The reference is iteration ``t=1`` rather than the initialization,
+because the initial factor ``W_1(0)`` is orthogonal,
+so all of its singular values equal 1
+and its singular vectors are not unique:
+any orthonormal basis is valid,
+so angles relative to the basis that `svd` happens to return
+would be meaningless.
+(At ``t=0`` the Procrustes rotation below picks the basis for ``W_1(0)``
+that is closest to that of ``W_1(1)``,
+so those angles are small.)
 Singular vectors are defined only up to sign
-(and up to rotation within repeated singular values,
-which is the case here because the initial factor is orthogonal),
+(and up to rotation within repeated singular values),
 so first align them with an orthogonal Procrustes rotation,
 as in the original python code.
 =#
-function svd_series(Ws)
-    F0 = svd(Ws[1])
+function svd_series(Ws; ref::Int = 2) # Ws[2] is W_1(1)
+    F0 = svd(Ws[ref])
     sv, right, left = (zeros(n, length(Ws)) for _ in 1:3)
     for (k, W) in enumerate(Ws)
         F = svd(W)
@@ -165,12 +192,14 @@ with the iteration ``t`` along the horizontal axis
 and the singular value index ``i`` along the vertical axis.
 =#
 titles = ["Singular values", "Right singular vectors", "Left singular vectors"]
-clabels = [L"\sigma_i(t)", L"\angle(v_i(t), v_i(0))", L"\angle(u_i(t), u_i(0))"]
-ulabels = ["σᵢ(t)", "∠(vᵢ(t), vᵢ(0))", "∠(uᵢ(t), uᵢ(0))"] # unicode for jim titles
+mlabels = [raw"\sigma_i(t)", raw"\angle(v_i(t), v_i(1))", raw"\angle(u_i(t), u_i(1))"]
+clabels = [latexstring("\$", m, "\$") for m in mlabels] # mix string and LaTeX
+tlabel(j, λ, math = "") = latexstring(titles[j], math, ", \$λ = $λ\$")
 
 function plot_jim(series, λ)
     pj = map(1:3) do j
-        jim(save_steps, 1:n, series[j]', titles[j] * " " * ulabels[j] * ", λ = $λ";
+        jim(save_steps, 1:n, series[j]',
+            tlabel(j, λ, " \$" * mlabels[j] * "\$");
             xlabel = L"Iteration $t$", ylabel = L"SV index $i$",
             yflip = true, aspect_ratio = :auto, color = :cividis,
             prompt = false, xticks = 0:3:nstep, yticks = [1; 5:5:n],
@@ -180,16 +209,19 @@ function plot_jim(series, λ)
         left_margin = 5Plots.mm, right_margin = 5Plots.mm)
 end;
 
-# Same information as line plots,
-# with one curve per singular value index ``i`` showing its evolution over iterations.
-# Only some of the more interesting indices are labeled in the legend.
+#=
+Same information as line plots,
+with one curve per singular value index ``i``
+showing its evolution over iterations.
+Only some of the more interesting indices are labeled in the legend.
+=#
 ilabel = [1:3; n÷2; n÷2+1; n-2:n] # first 3, middle 2, last 3
 
 function plot_lines(series, λ)
     colors = cgrad(:darktest, length(ilabel), categorical=true) # for labeled curves
     p2 = map(1:3) do j
         p = plot(; xlabel = L"Iteration $t$", ylabel = clabels[j],
-            xticks = 0:3:nstep, title = titles[j] * ", λ = $λ",
+            xticks = 0:3:nstep, title = tlabel(j, λ),
             legend = j == 1 ? :topleft : false, legend_columns = 2)
         for i in 1:n # unlabeled curves in light gray, underneath
             i in ilabel || plot!(p, save_steps, series[j][i, :]; color = :gray, alpha = 0.4)
